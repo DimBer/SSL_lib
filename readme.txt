@@ -1,25 +1,61 @@
- 
-
-1) COMPILE SOURCE CODE INTO OBJECT FILES
-
-$ gcc -c -Wall -Werror -fPIC Tuned_RwR.c csr_handling.c G_slice_extraction.c my_IO.c parameter_opt.c -lblas -lm 
 
 
-2) LOAD OBJECT FILES INTO PROPERLY NAMED DYNAMICALLY LINKED LIBRARY
+Programm ``test'' implements experiments of different methods on multiclass
+or multilabel graphs with available groundtruth labels. 
 
-$ gcc -shared -o librwr.so Tuned_RwR.o my_IO.o csr_handling.o G_slice_extraction.o parameter_opt.o
 
-3) ALSO PUT HEADER FILE TunedRwR.h TOGETHER WITH LIBRARY SINCE IT CONTAINS THE DECLARATION
+Input files format.
 
-4) COMPILE MAIN WHILE PROVIDING PATHS FOR .so LIBRARY (-L) AND #include (-I)
+``test'' loads the graph from a .txt file that contains edges as tab separated pairs of node indexes in the format: node1_index \tab node2_index. Node indexes should be in range [1 , 2^64 ]. The labels are loaded from a .txt file where each line is of the format: node_index \tab label ( for now node_indexes have to be sorted but I will allow for any indexing sequence). Labels have to be integers in [-127,127].  
 
-$ gcc -I/home/dimitris/Desktop/my_libs  test.c -o test -L/home/dimitris/Desktop/my_libs -lrwr -lblas
 
-5) BEFORE EXECUTION YOU NEED TO LET THE PROGRAM KNOW WHERE THE LIBRARY IS
+``test'' program command line (optional) arguments with values:
 
-$ LD_LIBRARY_PATH=/home/...
-$ export LD_LIBRARY_PATH 
-$ ./test ...
+ARGUMENT         VALUES            DEFAULT
+
+--method        Tuned_RwR          Tuned_RwR
+		AdaDIF
+		AdaDIF_LOO
+		PPR
+		HK
+
+--graph_file    (edges).txt        graphs/cora_adj.txt
+
+--label_file    (labels).txt       graphs/cora_label.txt
+
+--num_seeds     [1, 2^16]          100
+
+--walk_length   [1, 2^16]          20
+
+--lambda_trwr   >=0.0              1.0
+
+--lambda_addf   >=0.0              50.0
+
+--lambda_loo    >=0.0    
+
+--num_iters     [1, 2^16]          1
+
+``test'' program command line (optional) arguments:
+
+    OPTION             RESULT
+
+--unconstrained       switches AdaDIF and AdaDIF_LOO to unconstrained mode
+
+--single_thread       forces single thread execution
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
