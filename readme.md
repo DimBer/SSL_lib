@@ -17,11 +17,13 @@ Command line optional arguments with values:
 
 ARGUMENT | VALUES | DEFAULT
 -------- | ------ | -------
---method | *Tuned_RwR *AdaDIF *AdaDIF_LOO *PPR *HK | Tuned_RwR
-		
-		
-		
-		
+--method |  Tuned_RwR   | Tuned_RwR
+	    AdaDIF	
+	    AdaDIF_LOO	
+	    PPR	
+	    HK	
+-------- | ------ | -------
+
 
 --graph_file    (edges).txt        graphs/cora_adj.txt
 
