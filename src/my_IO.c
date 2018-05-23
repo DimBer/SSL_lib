@@ -33,7 +33,11 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 			      .num_seeds   = DEFAULT_NUM_SEEDS,
 			      .tel_prob    = DEFAULT_TEL_PROB,	
 			      .multi_label = DEFAULT_MULTILABEL,	 
-			      .no_constr = DEFAULT_UNCONSTRAINED };
+			      .no_constr = DEFAULT_UNCONSTRAINED,
+			      .graph_filename = DEFAULT_GRAPH,
+			      .label_filename = DEFAULT_LABEL,
+			      .method = DEFAULT_METHOD,
+			      .method_index = DEFAULT_METHOD_IND };
 
 
 	int opt= 0;

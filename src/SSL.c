@@ -109,16 +109,10 @@ int main(int argc, char **argv)
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if(graph_size!=label_count){printf("ERROR: graph size not matching label size\n");}
 
-printf("CHECK 4\n");
-
-
-
 	
    		uint64_t num_unlabeled = label_count - args.num_seeds;           
    		for(uint16_t i=0;i<args.num_seeds;i++) seeds[i]-=1;     
                 uint64_t* unlabeled = remove_from_list( (const uint64_t*) default_ind , (const uint64_t*) seeds ,label_count , (uint64_t) args.num_seeds );
-
-printf("CHECK 6\n");
 
 
 		one_hot_mat true_one_hot,pred_one_hot;

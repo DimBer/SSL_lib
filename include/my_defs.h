@@ -1,25 +1,25 @@
 #ifndef MY_DEFS_H_   
 #define MY_DEFS_H_
 
+#define DEBUG 0
+
+//Input buffer sizes
 
 #define EDGE_BUFF_SIZE 10000000
 #define CLASS_BUFF_SIZE 10000000
 
 
-
-#define MAXIT 100
-#define TOL 1.0e-8
-
+//Default command line arguments
 
 #define NUM_METHODS 4
 
-#define DEFAULT_NUM_WALK 15
+#define DEFAULT_NUM_WALK 20
 
 #define DEFAULT_TEL_PROB 0.05
 
 #define DEFAULT_L_TRWR 1.0
 
-#define DEFAULT_L_ADDF 10.0
+#define DEFAULT_L_ADDF 15.0
 
 #define DEFAULT_ITERS 1
 
@@ -29,6 +29,20 @@
 
 #define DEFAULT_MULTILABEL 0
 
+#define DEFAULT_GRAPH "graphs/pubmed_adj.txt"
+
+#define DEFAULT_LABEL "graphs/pubmed_label.txt"
+
+#define DEFAULT_METHOD "AdaDIF"
+
+#define DEFAULT_METHOD_IND 1
+
+//Default TunedRwR values
+
+#define MAXIT 100
+#define TOL 1.0e-8
+
+//Default optimization parameters
 
 
 #define GD_TOL 1.0e-3
@@ -48,9 +62,7 @@
 #define L2_REG_LAMBDA 0.05
 
 
-#define DEBUG 0
-
-
+//DATA STRUCTURES
 
 //structs to store classification and detection performance statistics
 
