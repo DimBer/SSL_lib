@@ -1,15 +1,19 @@
 
 
-Programm ``test'' implements experiments of different methods on multiclass
+Programm ``SSL'' implements experiments for different methods on multiclass
 or multilabel graphs with available groundtruth labels. 
 
 
 Input files format.
 
-``test'' loads the graph from a .txt file that contains edges as tab separated pairs of node indexes in the format: node1_index \tab node2_index. Node indexes should be in range [1 , 2^64 ]. The labels are loaded from a .txt file where each line is of the format: node_index \tab label ( for now node_indexes have to be sorted but I will allow for any indexing sequence). Labels have to be integers in [-127,127].  
+``SSL'' loads the graph from a .txt file that contains edges as tab separated pairs of node indexes in the format: node1_index \tab node2_index. Node indexes should be in range [1 , 2^64 ]. 
+
+For multiclass graphs, the labels are loaded from a .txt file where each line is of the format: node_index \tab label ( for now node_indexes have to be sorted but I will allow for any indexing sequence). Labels have to be integers in [-127,127]. 
+
+For multilabel graphs, labels are loaded from a txt file in compressed one-hot-matrix form (see graphs/HomoSapiens/class.txt for example).
 
 
-``test'' program command line (optional) arguments with values:
+Command line optional arguments with values:
 
 ARGUMENT         VALUES            DEFAULT
 
@@ -35,7 +39,10 @@ ARGUMENT         VALUES            DEFAULT
 
 --num_iters     [1, 2^16]          1
 
-``test'' program command line (optional) arguments:
+
+
+
+Command line optional arguments without values:
 
     OPTION             RESULT
 
@@ -43,7 +50,7 @@ ARGUMENT         VALUES            DEFAULT
 
 --single_thread       forces single thread execution
 
-
+--multilabel          specifies multilabel input / output
 
 
 
