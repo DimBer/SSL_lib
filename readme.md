@@ -3,9 +3,9 @@ __DESCRIPTION__
 Programm __SSL__ implements experiments for different __semi-supervised learing__ methods on __multiclassor multilabel__ graphs with available groundtruth labels. 
 
 Methods included:
-	* PPR: Personalized PageRank
-	* TunedRwR: Tuned random walk with restarts ( see [here](https://experts.umn.edu/ws/portalfiles/portal/99184908)  )
-	* AdaDIF: Adaptive Diffusions ( see [here](https://arxiv.org/pdf/1804.02081.pdf) )
+*PPR: Personalized PageRank
+*TunedRwR: Tuned random walk with restarts ( see [here](https://experts.umn.edu/ws/portalfiles/portal/99184908)  )
+*AdaDIF: Adaptive Diffusions ( see [here](https://arxiv.org/pdf/1804.02081.pdf) )
 	
 
 __INPUT FILES FORMAT__
