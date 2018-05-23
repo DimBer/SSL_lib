@@ -15,13 +15,13 @@ For multilabel graphs, labels are loaded from a txt file in compressed one-hot-m
 
 Command line optional arguments with values:
 
-ARGUMENT         VALUES            DEFAULT
-
---method        Tuned_RwR          Tuned_RwR
-		AdaDIF
-		AdaDIF_LOO
-		PPR
-		HK
+ARGUMENT | VALUES | DEFAULT
+-------- | ------ | -------
+--method | *Tuned_RwR *AdaDIF *AdaDIF_LOO *PPR *HK | Tuned_RwR
+		
+		
+		
+		
 
 --graph_file    (edges).txt        graphs/cora_adj.txt
 
