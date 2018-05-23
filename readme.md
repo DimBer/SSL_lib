@@ -13,13 +13,13 @@ For __multilabel__ graphs, labels are loaded from a txt file in compressed __one
 
 __COMPILATION__
 
-Dependencies: <span style="color:blue">some **blas** </span> and <span style="color:blue">some **pthread** </span>  must be installed
+Dependencies: ...blas... and ...pthread...  must be installed
 
-Command line: <span style="color:blue">some **make clean** </span> and then <span style="color:blue">some **make** </span>
+Command line: ...make clean... and then ...make...
 
 __EXECUTION__
 		      	 
-Command line: <span style="color:blue">some **./SSL [OPTIONS]** </span>
+Command line: ... ./SSL [OPTIONS]...
 
 __OPTIONS__
 
