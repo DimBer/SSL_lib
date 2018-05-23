@@ -13,13 +13,13 @@ For __multilabel__ graphs, labels are loaded from a txt file in compressed __one
 
 __COMPILATION__
 
-Dependencies: ...blas... and ...pthread...  must be installed
+Dependencies: `blas` and `pthread`  must be installed
 
-Command line: ...make clean... and then ...make...
+Command line: `make clean` and then `make`
 
 __EXECUTION__
 		      	 
-Command line: ... ./SSL [OPTIONS]...
+Command line: `./SSL [OPTIONS]`
 
 __OPTIONS__
 
