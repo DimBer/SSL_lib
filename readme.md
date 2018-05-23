@@ -2,6 +2,12 @@ __DESCRIPTION__
 
 Programm __SSL__ implements experiments for different __semi-supervised learing__ methods on __multiclassor multilabel__ graphs with available groundtruth labels. 
 
+Methods included:
+	* PPR: Personalized PageRank
+	* TunedRwR: Tuned random walk with restarts ( see [here](https://experts.umn.edu/ws/portalfiles/portal/99184908)  )
+	* AdaDIF: Adaptive Diffusions ( see [here](https://arxiv.org/pdf/1804.02081.pdf) )
+	
+
 __INPUT FILES FORMAT__
 
 __SSL__ loads the graph in __adjacency list__ format from a `.txt` file that contains edges as tab separated pairs of node indexes in the format: `node1_index \tab node2_index`. Node indexes should be in range `[1 , 2^64 ]`. 
