@@ -1,7 +1,6 @@
 __DESCRIPTION__
 
-Programm __SSL__ implements experiments for different __semi-supervised learing__ methods on __multiclass
-or multilabel__ graphs with available groundtruth labels. 
+Programm __SSL__ implements experiments for different __semi-supervised learing__ methods on __multiclassor multilabel__ graphs with available groundtruth labels. 
 
 __INPUT FILES FORMAT__
 
@@ -14,13 +13,13 @@ For __multilabel__ graphs, labels are loaded from a txt file in compressed __one
 
 __COMPILATION__
 
-Dependencies: <blas> and <pthreads> must be installed
+Dependencies: <span style="color:blue">some **blas** </span> and <span style="color:blue">some **pthread** </span>  must be installed
 
-Command line: <make clean> and <make>
+Command line: <span style="color:blue">some **make clean** </span> and then <span style="color:blue">some **make** </span>
 
 __EXECUTION__
 		      	 
-Command line: <./SSL [OPTIONS]> 
+Command line: <span style="color:blue">some **./SSL [OPTIONS]** </span>
 
 __OPTIONS__
 
