@@ -33,7 +33,7 @@ Command line optional arguments with values:
 
 ARGUMENT | VALUES | DEFAULT
 -------- | ------ | -------
-`--method` |  `Tuned_RwR` <br/> `AdaDIF` <br/> ~`AdaDIF_LOO`~ <br/> `PPR` <br/> ~`HK`~ | `AdaDIF`   	
+`--method` |  `Tuned_RwR` <br/> `AdaDIF` <br/> `PPR`| `AdaDIF`   	
 `--graph_file` | (adjacency list)`.txt` | `graphs/pubmed_adj.txt`
 `--label_file` | (label list or one-hot)`.txt` | `graphs/pubmed_label.txt`
 `--num_seeds` | `[1, 2^16]` | `100`
