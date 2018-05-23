@@ -2,7 +2,7 @@
 
 IDIR = include
 CC = gcc
-CFLAGS = -I$(IDIR) -L/usr/lib -lblas -lpthread -lm -Wall -g
+CFLAGS = -I$(IDIR) -lblas -lpthread -lm -Wall -g
 
 SDIR = src
 ODIR = obj

@@ -12,6 +12,16 @@ For __multiclass__ graphs, the labels are loaded from a .txt file where each lin
 For __multilabel__ graphs, labels are loaded from a txt file in compressed __one-hot-matrix__ form (see graphs/HomoSapiens/class.txt for example).
 
 
+__COMPILATION__
+
+Dependencies: <blas> and <pthreads> must be installed
+
+Command line: <make clean> and <make>
+
+__EXECUTION__
+		      	 
+Command line: <./SSL [OPTIONS]> 
+
 __OPTIONS__
 
 Command line optional arguments with values:
