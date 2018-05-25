@@ -348,7 +348,7 @@ uint64_t read_adjacency_to_buffer(uint64_t** buffer, FILE* file){
         uint64_t count = 0;
 	for (; count < EDGE_BUFF_SIZE; ++count)
 	{
-		int got = fscanf(file, "%"SCNu64"%"SCNu64"\n", &buffer[count][0] , &buffer[count][1]);
+		int got = fscanf(file, "%"SCNu64"\t%"SCNu64"\n", &buffer[count][0] , &buffer[count][1]);
 		if ((got != 2)||( (buffer[count][0]==0) && (buffer[count][1]==0))) break; // Stop scanning if wrong number of tokens (maybe end of file) or zero input
 	}
 	fclose(file);
@@ -391,7 +391,7 @@ one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
 
 	for (; count < CLASS_BUFF_SIZE; ++count)
 	{
-		int got = fscanf(file, "%"SCNu64"%"SCNu8"", &indexes[count] , &buffer[count]);
+		int got = fscanf(file, "%"SCNu64"\t%"SCNu8"", &indexes[count] , &buffer[count]);
 		if (got != 2) break; // wrong number of tokens - maybe end of file
 	}
 	fclose(file);
@@ -403,7 +403,7 @@ one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
 
 	uint64_t length = max_u64( indexes, count);
 	
-	printf("LENGTH %"PRIu64"\n",length);
+//	printf("LENGTH %"PRIu64"\n",length);
 
 	one_hot_mat all_labels = init_one_hot(num_class , length);
 	

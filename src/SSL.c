@@ -62,6 +62,7 @@ int main(int argc, char **argv)
 	
 	if(args.multi_label){
 		all_labels.mlabel = read_one_hot_mat(args.label_filename, &label_count); // All true labels in one-hot-matrix form 
+		printf("CHECK!!\n");
 		label_in.mlabel = init_one_hot( all_labels.mlabel.num_class , (uint64_t) args.num_seeds); 
 		num_labels_per_node = return_num_labels_per_node( all_labels.mlabel );
 	}else{
