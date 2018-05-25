@@ -129,9 +129,9 @@ int main(int argc, char **argv)
  		}
 
 		
-		f1_scores scores = get_f1_scores(true_one_hot, pred_one_hot, unlabeled, num_unlabeled );
+		f1_scores scores = get_averaged_f1_scores(true_one_hot, pred_one_hot, unlabeled, num_unlabeled );
 
-		average_micro_f1 += scores.micro;		
+		average_micro_f1 += scores.micro;				
 		average_macro_f1 += scores.macro;		
 
 		//free temporary arrays

@@ -106,7 +106,12 @@ double frob_norm(double* A, uint16_t dim){
 	return sqrt(norm);	
 }
 
-
+//mean of double array
+double mean(double* a, int len){
+	double sum=0;
+	for(int i=0;i<len;i++) sum+=a[i];		
+	return sum/(double)len;	
+}
 
 //Simple linear system solver using the LU decomposition
 /* INPUT: A,P filled in LUPDecompose; b - rhs vector; N - dimension
@@ -725,13 +730,25 @@ classifier_stats  get_class_stats(detector_stats* all_stats , uint8_t num_class 
 }
 
 
+// Takes array of detector statistics as input and returns array with f-1 scores for every class
+
+void get_per_class_f1_scores(double* f1_per_class, detector_stats* all_stats, uint8_t num_class ){
+	
+	for(uint8_t i=0;i<num_class;i++){ 
+		double TP = all_stats[i].true_pos;
+		double FN = all_stats[i].false_neg;
+		double FP = all_stats[i].false_pos;
+		f1_per_class[i] = 2.0*TP / ( 2.0*TP + FN + FP );
+	}
+}
+
 
  
 // Computes Micro and Macro f1-score
 // Inputs must be one_hot structs
 // f1_scores are only evaluated on the indexes denoted by unlabeled
 
-f1_scores get_f1_scores(one_hot_mat true_labels, one_hot_mat pred_labels, uint64_t* unlabeled , uint64_t num_unlabeled ){
+f1_scores get_averaged_f1_scores(one_hot_mat true_labels, one_hot_mat pred_labels, uint64_t* unlabeled , uint64_t num_unlabeled ){
 	
 	if( (true_labels.num_class != pred_labels.num_class) || (true_labels.length != pred_labels.length) ){
 		printf("Classifier stats ERROR: One-hot matrixes dimensions dont match\n");
@@ -757,9 +774,16 @@ f1_scores get_f1_scores(one_hot_mat true_labels, one_hot_mat pred_labels, uint64
 	
 	classifier_stats class_stats = get_class_stats(all_stats , true_labels.num_class );
 	
-	scores.micro = harmonic_mean(class_stats.micro_precision, class_stats.micro_recall );
-	scores.macro = harmonic_mean(class_stats.macro_precision, class_stats.macro_recall );
+	double f1_per_class[true_labels.num_class];
 	
+	get_per_class_f1_scores(f1_per_class, all_stats, true_labels.num_class);
+	
+	scores.micro = harmonic_mean(class_stats.micro_precision, class_stats.micro_recall );
+        scores.macro = mean( f1_per_class, (int)true_labels.num_class );
+/*
+        This definition of Macro F1 (using macro averaged precision and recall) does not seem to work well
+	scores.macro = harmonic_mean(class_stats.macro_precision, class_stats.macro_recall ); //
+*/	
 	return scores;	
 }
 

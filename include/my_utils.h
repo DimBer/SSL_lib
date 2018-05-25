@@ -17,6 +17,8 @@ int compare ( const void* , const void* );
 
 double frob_norm(double*,uint16_t);
 
+double mean(double* , int );
+
 void LUPSolve(double** , int* , double* , int , double*);
 
 int LUPDecompose(double **, int , double , int *);
@@ -68,7 +70,9 @@ one_hot_mat read_one_hot_mat(char* , uint64_t* );
 
 double accuracy(int8_t* , int8_t* , uint64_t* , uint64_t );
 
-f1_scores get_f1_scores(one_hot_mat , one_hot_mat, uint64_t* , uint64_t);
+f1_scores get_averaged_f1_scores(one_hot_mat , one_hot_mat, uint64_t* , uint64_t);
+
+void get_per_class_f1_scores(double* , detector_stats* , uint8_t );
 
 one_hot_mat list_to_one_hot( uint64_t* , int8_t* , uint8_t , int8_t* ,  uint64_t   ,uint64_t );
 
