@@ -1,3 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ Contains interfaces for (multi-threaded) Adaptive Diffusions (AdaDIF) method and for (single-threaded) Personalize-PageRank 
+ 
+ INPUT:  1) Graph as edgelist
+ 	 
+ 	 2) Seed indexes
+ 	 
+ 	 3) Seed labels as abstract_label type (one-hot-mat or list of labels depending on 
+                        		        multi-class or multi-label; see defs.h for more )	 
+ 
+ 	 4) Algorithm parameters and options
+ 
+ OUTPUT: 1) Writes label predictions as abstract_label type 
+	 2) Returns number of nodes ( usefull for cross-checking with  )	
+
+ Dimitris Berberidis 
+ University of Minnesota 2017-2018
+*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,15 +30,10 @@
 #include <inttypes.h>
 
 #include "csr_handling.h"
-
 #include "comp_engine.h"
-
 #include "parameter_opt.h"
-
 #include "my_IO.h"
-
 #include "my_defs.h"
-
 #include "my_utils.h"
 
 // Adaptive - Diffusions method

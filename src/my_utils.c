@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ Contains collection of low-level routines for handling lists, one-hot matrices, evaluation metrics (f1-scores), and other.
+
+ Dimitris Berberidis 
+ University of Minnesota 2017-2018
+*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +20,6 @@
 #include <sys/stat.h>
 
 #include "my_utils.h"
-
 #include "my_defs.h"
 
 
@@ -283,6 +293,61 @@ void print_array_1D(double* arr, uint64_t N, uint64_t M){
 	printf("\n");
 }
 
+//Pradict labels from largest soft label
+void predict_labels( int8_t* label_out, double* soft_labels, int8_t* class,
+	             uint64_t graph_size, uint8_t num_class ){
+	uint64_t i;
+	uint8_t j,max_ind;
+	double max_val;
+
+	for(i=0;i<graph_size;i++){
+		max_val=-100.0f;
+		for(j=0;j<num_class;j++){  
+			if(max_val<soft_labels[i*num_class + j]){
+				max_val=soft_labels[i*num_class + j];
+				max_ind=j;}
+		}
+		label_out[i]=class[max_ind];
+	}
+}
+
+//Pradict labels from largest soft label (Soft labels are transposed array)
+void predict_labels_type2( int8_t* label_out, double* soft_labels, int8_t* class,
+			   uint64_t graph_size, uint8_t num_class ){
+	uint64_t j;
+	uint8_t i,max_ind;
+	double max_val;
+
+	for(j=0;j<graph_size;j++){
+		max_val=-100.0f;
+		for(i=0;i<num_class;i++){  
+			if(max_val<soft_labels[i*graph_size + j]){
+				max_val=soft_labels[i*graph_size + j];
+				max_ind=i;}	
+		}
+		label_out[j]=class[max_ind];		
+	}
+}
+
+//Print the two collumn array of edges
+void print_edge_list(const uint64_t** edge_list, uint64_t len){
+	uint64_t i;
+	printf("EDGE LIST: \n");
+	for(i=0;i<len;i++){
+		printf("%"PRIu64"  %"PRIu64"\n",edge_list[i][0],edge_list[i][1]);
+	}
+}
+
+
+
+
+//Print array (double)
+void print_predictions(int8_t* arr, uint64_t N){
+	uint64_t i;
+	printf("Predicted labels: \n");
+	for(i=0;i<N;i++){printf("%"PRId8"\n",arr[i]);}
+
+}
 
 //Check if file is valid
 int file_isreg(char *path) {

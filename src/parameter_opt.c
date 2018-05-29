@@ -1,3 +1,16 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ Contains routines for constrained quadratic optimization used by AdaDIF and TunedRwR.
+ 
+
+ Dimitris Berberidis 
+ University of Minnesota 2017-2018
+*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,16 +20,14 @@
 #include <inttypes.h>
 
 #include "parameter_opt.h"
-
 #include "my_defs.h"
-
 #include "my_utils.h"
 
 // DECLARE STATIC FUNCTIONS
 
 //static double cost_fun ( double* , double* , double , double , int* , int, double);
 
-static uint16_t tune_parameters( double* , double* ,  uint8_t* , uint16_t , double , uint16_t  , double );
+static uint16_t tune_parameters( double* , double* , uint8_t* , uint16_t , double , uint16_t , double );
 static double max_abs_dif(double*, double*, double*, uint64_t );
 static double cost_func(double*,double*,double*,uint16_t);
 

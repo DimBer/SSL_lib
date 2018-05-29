@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ Contains routines for handling compressed-sparse-row (CSR) graphs( allocating , copying, normalizing, scaling, mat-vec, mat-mat, freeing )
+
+ Dimitris Berberidis 
+ University of Minnesota 2017-2018
+*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,9 +18,7 @@
 #include <inttypes.h>
 
 #include "csr_handling.h"
-
 #include "my_defs.h"
-
 #include "my_utils.h"
 
 

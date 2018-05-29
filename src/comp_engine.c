@@ -1,3 +1,15 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ Contains implementations of AdaDIF, TunedRwR, and PPR.
+ 
+
+ Dimitris Berberidis 
+ University of Minnesota 2017-2018
+*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,164 +22,16 @@
 #include <sys/sysinfo.h>
 
 #include "comp_engine.h"
-
 #include "csr_handling.h"
-
 #include "my_defs.h"
-
 #include "parameter_opt.h"
-
 #include "my_utils.h"
 
 
 static uint8_t get_threads_and_width(uint8_t* , uint8_t ); 
+static double* get_coef_A(uint64_t , uint16_t , uint16_t , uint64_t* , double* ,double* , const uint64_t* , double );
+static double* get_coef_b(uint64_t , uint16_t , uint16_t ,uint16_t , uint64_t* , double* , uint64_t* );
 
-static double* get_coef_A(uint64_t , uint16_t , uint16_t  , uint64_t*  , double*  ,double*  , const uint64_t*  , double );
-
-static double* get_coef_b(uint64_t , uint16_t , uint16_t  ,uint16_t , uint64_t*  , double*  , uint64_t*  );
-
-
-
-//Extract the AdaDIF diffusion coefficients 
-
-double* get_AdaDIF_parameters( uint64_t N, uint64_t* degrees, double* land_prob, 
-			       double* dif_land_prob, const uint64_t* seed_indices,
-			       uint64_t* local_seeds, uint8_t* class_ind, uint16_t walk_length,
-			        uint16_t num_seeds, uint16_t num_pos,double lambda,int8_t no_constr){
-	
-	double* theta = (double*) malloc(walk_length*sizeof(double));
-
-        //A and b are the Hessian and linear component of the quadratic cost
-        	
-	double* A = get_coef_A(N,walk_length,num_seeds,degrees, land_prob, dif_land_prob,seed_indices,lambda);
-	
-	double* b = get_coef_b(N,walk_length,num_seeds,num_pos,degrees, land_prob, local_seeds);	
-	
-	if(!no_constr){
-		simplex_constr_QP_with_PG(theta,A,b,walk_length);
-	}else{
-		hyperplane_constr_QP(theta,A,b,walk_length);
-	}
-
-	free(b);
-	free(A);	
-	return theta;
-}
-
-
-
-
-//Extract landing and dif probabilities by performing K steps of simple random walk on graph 
-
-void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph graph,
-			 uint16_t walk_length , uint64_t* seeds , uint16_t num_seeds ){
-	uint64_t i;	
-	uint16_t j;
-	double* seed_vector = (double*) malloc(graph.num_nodes* sizeof(double));
-	double one_over_num_seeds = 1.0f /(double) num_seeds ;
-
-	printf("NUM NODES: %"PRIu64"\n",graph.num_nodes);
-
-	//prepare seed vector
-	for(i=0;i<graph.num_nodes;i++){ seed_vector[i] = 0.0f ;}
-	for(j=0;j<num_seeds;j++){			
-		seed_vector[seeds[j]] = one_over_num_seeds ;
-	}
-
-
-	//do the random walk
-	my_CSR_matvec( land_prob, seed_vector , graph);  
-
-
-	for(j=1;j<walk_length;j++){
-		my_CSR_matvec( land_prob+j*graph.num_nodes, land_prob+(j-1)*graph.num_nodes , graph);	
-		my_array_sub( dif_land_prob+(j-1)*graph.num_nodes, land_prob+(j-1)*graph.num_nodes,
-			      land_prob+j*graph.num_nodes, graph.num_nodes);
-	}
-
-#if DEBUG
-	printf("LAST LAND PROBs: \n");
-	for(i=0;i<=100;i++){ printf(" %lf ",land_prob[(walk_length-1)*graph.num_nodes + i ]) ;}
-	printf("...................... \n");
-#endif		
-
-	//do one final step to obtain the last differential
-
-	double* extra_step = (double*) malloc(graph.num_nodes* sizeof(double));
-	my_CSR_matvec( extra_step, land_prob+ (walk_length -1)*graph.num_nodes , graph);	
-	my_array_sub( dif_land_prob+(walk_length-1)*graph.num_nodes, land_prob+(walk_length-1)*graph.num_nodes,
-		      extra_step, graph.num_nodes);	
-
-
-	free(seed_vector);
-	free(extra_step);
-}
-
-//Core of AdaDIF method that runs on single thread (output is soft labels)
-void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
-		  const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
-		  uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr){       
-	printf("Number of local classes%"PRIu8": \n",num_class); 
-	uint8_t i;
-	for(i=0;i<num_class;i++){		
-		double* land_prob = (double*) malloc(walk_length*graph.num_nodes*sizeof(double));
-		double* dif_land_prob = (double*) malloc(walk_length*graph.num_nodes*sizeof(double));
-		uint16_t j,k=0;
-		uint64_t* local_seeds =(uint64_t*)malloc(num_per_class[i] *sizeof(uint64_t));    		
-
-
-		for(j=0;j<num_seeds;j++){ 
-			if( class_ind[i*num_seeds + j] ==1 )			
-				local_seeds[k++] = seed_indices[j];
-		}
-
-
-		perform_random_walk(land_prob, dif_land_prob, graph , walk_length , local_seeds , num_per_class[i] );
-
-				
-		double* theta = get_AdaDIF_parameters(graph.num_nodes,graph.degrees,land_prob,dif_land_prob,seed_indices,local_seeds,
-		                                      class_ind+i*num_seeds,walk_length,num_seeds,num_per_class[i],lambda,no_constr );
-
-		printf("THETA: ");
-		int n;
-		for(n=0;n<walk_length;n++){printf(" %.3lf",theta[n]);}
-		printf("\n");		
-
-	 
-		matvec_trans_long( soft_labels+i*graph.num_nodes , land_prob, theta, graph.num_nodes, walk_length );
-
-
-		//free landing probabilities
-		free(local_seeds);
-		free(land_prob);
-		free(dif_land_prob);	
-		free(theta);
-	} 
-}
-
-
-//Here I slice the output(soft labels) and input (class_ind)
-//Using aliasing on the shifted pointers such that single threaded AdaDIF_core is compeltely "blind" to the slicing process
-void* AdaDIF_squezze_to_one_thread( void* param){
-	pass_to_thread_type_2* data = param;
-
-	double* soft_labels = data->soft_labels + (data->graph.num_nodes * data->from);
-	uint8_t* class_ind = data->class_ind + data->num_seeds*data->from;
-	uint16_t* num_per_class = data->num_per_class + data->from;
-
-	clock_t begin = clock(); 	
-
-	AdaDIF_core( soft_labels, data->graph,  data->num_seeds, data->seeds, data->num_local_classes, class_ind, num_per_class,
-		     data->walk_length, data->lambda, data->no_constr);
-
-	clock_t end = clock();
-	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;  		
-
-	printf("Thread from classes with index %"PRIu8" to %"PRIu8" finished in %lf sec \n", data->from, data->to, time_spent);
-
-	pthread_exit(0);
-
-}
 
 //Multi-threaded AdaDIF method (output is soft labels)
 void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t num_seeds, 
@@ -241,6 +105,150 @@ void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t nu
 	free(data);           
 
 }
+
+
+
+//Here I slice the output(soft labels) and input (class_ind)
+//Using aliasing on the shifted pointers such that single threaded AdaDIF_core is compeltely "blind" to the slicing process
+void* AdaDIF_squezze_to_one_thread( void* param){
+	pass_to_thread_type_2* data = param;
+
+	double* soft_labels = data->soft_labels + (data->graph.num_nodes * data->from);
+	uint8_t* class_ind = data->class_ind + data->num_seeds*data->from;
+	uint16_t* num_per_class = data->num_per_class + data->from;
+
+	clock_t begin = clock(); 	
+
+	AdaDIF_core( soft_labels, data->graph,  data->num_seeds, data->seeds, data->num_local_classes, class_ind, num_per_class,
+		     data->walk_length, data->lambda, data->no_constr);
+
+	clock_t end = clock();
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;  		
+
+	printf("Thread from classes with index %"PRIu8" to %"PRIu8" finished in %lf sec \n", data->from, data->to, time_spent);
+
+	pthread_exit(0);
+
+}
+
+//Core of AdaDIF method that runs on single thread (output is soft labels)
+void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
+		  const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
+		  uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr){       
+	printf("Number of local classes%"PRIu8": \n",num_class); 
+	uint8_t i;
+	for(i=0;i<num_class;i++){		
+		double* land_prob = (double*) malloc(walk_length*graph.num_nodes*sizeof(double));
+		double* dif_land_prob = (double*) malloc(walk_length*graph.num_nodes*sizeof(double));
+		uint16_t j,k=0;
+		uint64_t* local_seeds =(uint64_t*)malloc(num_per_class[i] *sizeof(uint64_t));    		
+
+
+		for(j=0;j<num_seeds;j++){ 
+			if( class_ind[i*num_seeds + j] ==1 )			
+				local_seeds[k++] = seed_indices[j];
+		}
+
+
+		perform_random_walk(land_prob, dif_land_prob, graph , walk_length , local_seeds , num_per_class[i] );
+
+				
+		double* theta = get_AdaDIF_parameters(graph.num_nodes,graph.degrees,land_prob,dif_land_prob,seed_indices,local_seeds,
+		                                      class_ind+i*num_seeds,walk_length,num_seeds,num_per_class[i],lambda,no_constr );
+
+		printf("THETA: ");
+		int n;
+		for(n=0;n<walk_length;n++){printf(" %.3lf",theta[n]);}
+		printf("\n");		
+
+	 
+		matvec_trans_long( soft_labels+i*graph.num_nodes , land_prob, theta, graph.num_nodes, walk_length );
+
+
+		//free landing probabilities
+		free(local_seeds);
+		free(land_prob);
+		free(dif_land_prob);	
+		free(theta);
+	} 
+}
+
+
+//Extract landing and dif probabilities by performing K steps of simple random walk on graph 
+
+void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph graph,
+			 uint16_t walk_length , uint64_t* seeds , uint16_t num_seeds ){
+	uint64_t i;	
+	uint16_t j;
+	double* seed_vector = (double*) malloc(graph.num_nodes* sizeof(double));
+	double one_over_num_seeds = 1.0f /(double) num_seeds ;
+
+	printf("NUM NODES: %"PRIu64"\n",graph.num_nodes);
+
+	//prepare seed vector
+	for(i=0;i<graph.num_nodes;i++){ seed_vector[i] = 0.0f ;}
+	for(j=0;j<num_seeds;j++){			
+		seed_vector[seeds[j]] = one_over_num_seeds ;
+	}
+
+
+	//do the random walk
+	my_CSR_matvec( land_prob, seed_vector , graph);  
+
+
+	for(j=1;j<walk_length;j++){
+		my_CSR_matvec( land_prob+j*graph.num_nodes, land_prob+(j-1)*graph.num_nodes , graph);	
+		my_array_sub( dif_land_prob+(j-1)*graph.num_nodes, land_prob+(j-1)*graph.num_nodes,
+			      land_prob+j*graph.num_nodes, graph.num_nodes);
+	}
+
+#if DEBUG
+	printf("LAST LAND PROBs: \n");
+	for(i=0;i<=100;i++){ printf(" %lf ",land_prob[(walk_length-1)*graph.num_nodes + i ]) ;}
+	printf("...................... \n");
+#endif		
+
+	//do one final step to obtain the last differential
+
+	double* extra_step = (double*) malloc(graph.num_nodes* sizeof(double));
+	my_CSR_matvec( extra_step, land_prob+ (walk_length -1)*graph.num_nodes , graph);	
+	my_array_sub( dif_land_prob+(walk_length-1)*graph.num_nodes, land_prob+(walk_length-1)*graph.num_nodes,
+		      extra_step, graph.num_nodes);	
+
+
+	free(seed_vector);
+	free(extra_step);
+}
+
+//Extract the AdaDIF diffusion coefficients 
+
+double* get_AdaDIF_parameters( uint64_t N, uint64_t* degrees, double* land_prob, 
+			       double* dif_land_prob, const uint64_t* seed_indices,
+			       uint64_t* local_seeds, uint8_t* class_ind, uint16_t walk_length,
+			        uint16_t num_seeds, uint16_t num_pos,double lambda,int8_t no_constr){
+	
+	double* theta = (double*) malloc(walk_length*sizeof(double));
+
+        //A and b are the Hessian and linear component of the quadratic cost
+        	
+	double* A = get_coef_A(N,walk_length,num_seeds,degrees, land_prob, dif_land_prob,seed_indices,lambda);
+	
+	double* b = get_coef_b(N,walk_length,num_seeds,num_pos,degrees, land_prob, local_seeds);	
+	
+	if(!no_constr){
+		simplex_constr_QP_with_PG(theta,A,b,walk_length);
+	}else{
+		hyperplane_constr_QP(theta,A,b,walk_length);
+	}
+
+	free(b);
+	free(A);	
+	return theta;
+}
+
+
+
+
 
 
 

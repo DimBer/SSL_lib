@@ -1,12 +1,10 @@
 #ifndef MY_UTILS_H_   
 #define MY_UTILS_H_
 
-//various usdeful functions and routines
 
 #include "my_defs.h"
 
-
-
+//various usdeful functions and routines
 
 
 uint64_t rand_lim(uint64_t);
@@ -59,7 +57,15 @@ uint64_t read_adjacency_to_buffer(uint64_t**,FILE*);
 
 int8_t* read_labels(char* , uint64_t*);
 
+void predict_labels( int8_t* , double* , int8_t* ,uint64_t , uint8_t );
+
+void predict_labels_type2( int8_t* , double* , int8_t* , uint64_t, uint8_t);
+
 void print_array_1D(double* , uint64_t , uint64_t );
+
+void print_edge_list(const uint64_t** , uint64_t );
+
+void print_predictions(int8_t* , uint64_t );
 
 int file_isreg( char* ); 
 
