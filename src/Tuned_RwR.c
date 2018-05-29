@@ -20,8 +20,11 @@
 
 
 uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list, uint64_t num_edges,
-		    const uint64_t* seed_indices, abstract_labels labels , uint16_t num_seeds,
-		    double tel_prob, double lambda){
+		    const uint64_t* seed_indices, abstract_labels labels , cmd_args args){
+	
+	uint16_t num_seeds = args.num_seeds;
+	double tel_prob = args.tel_prob;
+	double lambda = args.lambda_trwr;	
 
 	uint64_t i;
 	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));
@@ -40,7 +43,7 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 
 	make_CSR_col_stoch(&graph);
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////
 	// HANDLE LABELS
 
 	uint8_t num_class; 
@@ -50,7 +53,7 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 	
 	num_class = abstract_handle_labels( &num_per_class, &class_ind, &class, labels, num_seeds);
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////
 
 	uint16_t iters; //Number of iters to extract G slice
 	double* G_s=malloc(graph.num_nodes*num_seeds*sizeof(double));
@@ -59,7 +62,7 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 
 	//Obtaining slice of G AND the square matrix G_LL 
 
-	iters = get_slice_of_G( G_s, seeds, num_seeds, tel_prob, graph);
+	iters = get_slice_of_G( G_s, seeds, num_seeds, tel_prob, graph, args.single_thread);
 
 
 	double* G_ll=malloc(num_seeds*num_seeds*sizeof(double));

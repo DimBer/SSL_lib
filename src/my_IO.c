@@ -37,7 +37,8 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 			      .graph_filename = DEFAULT_GRAPH,
 			      .label_filename = DEFAULT_LABEL,
 			      .method = DEFAULT_METHOD,
-			      .method_index = DEFAULT_METHOD_IND };
+			      .method_index = DEFAULT_METHOD_IND,
+			      .single_thread = DEFAULT_SINGLE_THREAD };
 
 
 	int opt= 0;
@@ -54,7 +55,8 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 		{"lambda_addf",   required_argument, 0,  'h' }, 
 		{"walk_length",   required_argument, 0,  'i' }, 		
 		{"unconstrained",   no_argument, 0,  'j' },
-		{"multilabel",   no_argument, 0,  'k' }, 		 
+		{"multilabel",   no_argument, 0,  'k' },
+		{"single_thread",   no_argument, 0,  'l' }, 		 
 		{0,           0,                 0,  0   }	
 	};
 
@@ -127,7 +129,9 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 			case 'j' : args->no_constr = 1;
 				   break;		
 			case 'k' : args->multi_label = 1;
-				   break;		
+				   break;	
+   			case 'l' : args->single_thread = 1;
+				   break;			
 				   exit(EXIT_FAILURE);
 		}
 	}
@@ -183,8 +187,9 @@ uint8_t handle_labels(const int8_t* labels, uint16_t L, int8_t* class,
 	return count;
 }
 
-// Take array of labels OR a one-hot-matrix and return number of classes, list of classes and indicator vectors
-uint8_t abstract_handle_labels( uint16_t** num_per_class, uint8_t** class_ind, int8_t** class, abstract_labels labels, uint16_t num_seeds){
+//Take array of labels OR a one-hot-matrix and return number of classes, list of classes and indicator vectors
+uint8_t abstract_handle_labels( uint16_t** num_per_class, uint8_t** class_ind, int8_t** class,
+			        abstract_labels labels, uint16_t num_seeds){
 
         uint8_t num_class;
 

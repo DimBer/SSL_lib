@@ -349,7 +349,8 @@ uint64_t read_adjacency_to_buffer(uint64_t** buffer, FILE* file){
 	for (; count < EDGE_BUFF_SIZE; ++count)
 	{
 		int got = fscanf(file, "%"SCNu64"\t%"SCNu64"\n", &buffer[count][0] , &buffer[count][1]);
-		if ((got != 2)||( (buffer[count][0]==0) && (buffer[count][1]==0))) break; // Stop scanning if wrong number of tokens (maybe end of file) or zero input
+		if ((got != 2)||( (buffer[count][0]==0) && (buffer[count][1]==0))) break; 
+		// Stop scanning if wrong number of tokens (maybe end of file) or zero input
 	}
 	fclose(file);
 	return count;
@@ -522,7 +523,8 @@ void rearange(uint64_t* ind, void* A, char* type , uint64_t len ){
 
 //Remove items of given indexes from array (list)
 // Return result in NEW  list 
-uint64_t* remove_from_list(const uint64_t* list, const uint64_t* indexes_to_be_removed, uint64_t len, uint64_t num_removed ){
+uint64_t* remove_from_list(const uint64_t* list, const uint64_t* indexes_to_be_removed, 
+			   uint64_t len, uint64_t num_removed ){
 
 	uint64_t* new_list = (uint64_t*) malloc((len-num_removed)*sizeof(uint64_t));
 
@@ -571,7 +573,8 @@ uint8_t find_unique(int8_t* unique_elements, const int8_t* buffer,uint16_t N){
 // Label count is number of indexes with known labels
 // label_count<=length
 //If label_count<=length, then rows of the one_hot matrix without a coresponding labeled index will be [0...0]
-one_hot_mat list_to_one_hot( uint64_t* ind , int8_t* labels, uint8_t num_class , int8_t* class ,  uint64_t label_count ,uint64_t length){
+one_hot_mat list_to_one_hot( uint64_t* ind , int8_t* labels, uint8_t num_class ,
+			     int8_t* class ,  uint64_t label_count ,uint64_t length){
 	
 	one_hot_mat one_hot = init_one_hot( num_class , length);
 	

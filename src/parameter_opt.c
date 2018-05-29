@@ -21,7 +21,7 @@ static double max_abs_dif(double*, double*, double*, uint64_t );
 static double cost_func(double*,double*,double*,uint16_t);
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -297,7 +297,8 @@ static uint16_t tune_parameters( double* x, double* G_ll,  uint8_t* ind , uint16
 
 		i++;
 
-	}while( i<MAXIT_GD &&  fabs(1.0f-ratio)>GD_TOL ); //Terminate when ratio between l-inf norm of two consequtive gradients is less tha threshold
+	}while( i<MAXIT_GD &&  fabs(1.0f-ratio)>GD_TOL ); 
+	//Terminate when ratio between l-inf norm of two consequtive gradients is less tha threshold
 
 	for(j=0;j<L;j++){ x[j]=(ind[j]==1)? x[j] : -x[j] ;}  //Give back the signs to theta
 
@@ -338,7 +339,8 @@ void tune_all_parameters(double* theta,double* G_ll, uint8_t* class_ind, uint16_
 
 		printf("CHECK 1\n");
 
-		iters = tune_parameters(this_theta, G_ll, this_class_ind ,num_seeds,lambda, num_per_class[i], step_size);
+		iters = tune_parameters(this_theta, G_ll, this_class_ind ,num_seeds,lambda,
+				        num_per_class[i], step_size);
 
 		printf(" PGD ITERS: %"PRIu16" \n ",iters);
 

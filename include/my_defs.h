@@ -37,6 +37,8 @@
 
 #define DEFAULT_METHOD_IND 1
 
+#define DEFAULT_SINGLE_THREAD 0
+
 //Default TunedRwR values
 
 #define MAXIT 100
@@ -130,7 +132,8 @@ typedef struct{
 	uint16_t walk_length;
 	uint8_t method_index;
 	uint8_t no_constr;
-	uint8_t multi_label;	
+	uint8_t multi_label;
+	uint8_t single_thread;	
 } cmd_args; 
 
 

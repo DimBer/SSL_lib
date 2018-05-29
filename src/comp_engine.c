@@ -81,7 +81,8 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 
 	for(j=1;j<walk_length;j++){
 		my_CSR_matvec( land_prob+j*graph.num_nodes, land_prob+(j-1)*graph.num_nodes , graph);	
-		my_array_sub( dif_land_prob+(j-1)*graph.num_nodes, land_prob+(j-1)*graph.num_nodes, land_prob+j*graph.num_nodes, graph.num_nodes);
+		my_array_sub( dif_land_prob+(j-1)*graph.num_nodes, land_prob+(j-1)*graph.num_nodes,
+			      land_prob+j*graph.num_nodes, graph.num_nodes);
 	}
 
 #if DEBUG
@@ -94,7 +95,8 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 
 	double* extra_step = (double*) malloc(graph.num_nodes* sizeof(double));
 	my_CSR_matvec( extra_step, land_prob+ (walk_length -1)*graph.num_nodes , graph);	
-	my_array_sub( dif_land_prob+(walk_length-1)*graph.num_nodes, land_prob+(walk_length-1)*graph.num_nodes, extra_step, graph.num_nodes);	
+	my_array_sub( dif_land_prob+(walk_length-1)*graph.num_nodes, land_prob+(walk_length-1)*graph.num_nodes,
+		      extra_step, graph.num_nodes);	
 
 
 	free(seed_vector);
@@ -155,7 +157,8 @@ void* AdaDIF_squezze_to_one_thread( void* param){
 
 	clock_t begin = clock(); 	
 
-	AdaDIF_core( soft_labels, data->graph,  data->num_seeds, data->seeds, data->num_local_classes, class_ind, num_per_class, data->walk_length, data->lambda, data->no_constr);
+	AdaDIF_core( soft_labels, data->graph,  data->num_seeds, data->seeds, data->num_local_classes, class_ind, num_per_class,
+		     data->walk_length, data->lambda, data->no_constr);
 
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;  		
@@ -169,11 +172,14 @@ void* AdaDIF_squezze_to_one_thread( void* param){
 //Multi-threaded AdaDIF method (output is soft labels)
 void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t num_seeds, 
 			       const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
-			       uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr){
+			       uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr, uint8_t single_thread){
 
 	uint8_t i,NUM_THREADS, width;
 
 	NUM_THREADS = get_threads_and_width(&width, num_class);
+	
+	if(single_thread) NUM_THREADS = 1;
+	
 	printf("NUMBER OF THREADS: %"PRIu8" \n",NUM_THREADS);	
 
 #if 0
@@ -257,13 +263,16 @@ static uint8_t get_threads_and_width(uint8_t* width ,uint8_t num_class){
 
 //Obtain slice of G  as stationary distributions. (Unweighted) Seed set must be defined 
 //Returns numbr of itrations untill convergence
-uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, double tel_prob, csr_graph graph ){
+uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, double tel_prob, 
+			 csr_graph graph, uint8_t single_thread ){
+
 	//Do it SMART: Use a temporary G_s_next where you store the left hand side of iteration
 	//Then at eah iteration just flip pointers between G_s and G_s_next
 	//Multiple threads compute different slices of G_s
 	uint8_t NUM_THREADS = get_nprocs();
 	printf("NUMBER OF THREADS: %"PRIu8" \n",NUM_THREADS);
-	//	NUM_THREADS=1;
+	
+	if(single_thread) NUM_THREADS = 1;
 
 	uint64_t i,j;
 	uint16_t iter[NUM_THREADS];
@@ -465,7 +474,8 @@ void extract_G_ll(double* G_ll, double* G_s, uint64_t* seeds, uint16_t num_seeds
 
 
 //The following two functions generate the coefficients required by the AdaDIF QP
-static double* get_coef_A(uint64_t N, uint16_t K, uint16_t L , uint64_t* d , double* P ,double* P_dif , const uint64_t* L_ind , double lambda ){
+static double* get_coef_A(uint64_t N, uint16_t K, uint16_t L , uint64_t* d , 
+			  double* P ,double* P_dif , const uint64_t* L_ind , double lambda ){
 	uint64_t i,j;
 	
 	double* A = (double*) malloc(K*K*sizeof(double));

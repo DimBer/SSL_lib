@@ -20,13 +20,15 @@
 
 // Adaptive - Diffusions method
 uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, uint64_t num_edges,
-		 const uint64_t* seed_indices, abstract_labels labels , uint16_t num_seeds,
-		  uint16_t walk_length, double lambda, int8_t no_constr)
+		 const uint64_t* seed_indices, abstract_labels labels , cmd_args args )
 {
+		
+	uint16_t num_seeds = args.num_seeds;
+	uint16_t walk_length = args.walk_length;
+	double lambda = args.lambda_addf;
+	uint8_t no_constr = args.no_constr;	
 
-	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));
-	
-	
+	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));	
 	for(uint64_t i=0;i<num_seeds;i++){seeds[i]=seed_indices[i]-1;}
 
         //Create CSR graph from edgelist 
@@ -40,7 +42,7 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	make_CSR_col_stoch(&graph);
 
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////
 	// HANDLE LABELS
 
 	uint8_t num_class; 
@@ -51,7 +53,7 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	num_class = abstract_handle_labels( &num_per_class, &class_ind, &class, labels, num_seeds);
 
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////
 
 
 	clock_t begin = clock();
@@ -60,14 +62,15 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	
  	printf("CHECK.........\n");
 
-        AdaDIF_core_multi_thread( soft_labels, graph, num_seeds, seeds, num_class, class_ind, num_per_class, walk_length, lambda, no_constr);
+        AdaDIF_core_multi_thread( soft_labels, graph, num_seeds, seeds, num_class, class_ind,
+        			   num_per_class, walk_length, lambda, no_constr, args.single_thread);
         	
 	if(labels.multi_label){
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
 	}else{
 		label_out->mclass = (int8_t*) malloc(graph.num_nodes*sizeof(int8_t));
-		predict_labels_type2(label_out->mclass, soft_labels, class , graph.num_nodes, num_class );
+		predict_labels_type2(label_out->mclass, soft_labels, class, graph.num_nodes, num_class );
 	}
 
 	clock_t end = clock();
@@ -111,14 +114,15 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 
 //Personalized Pagerank method
 uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, uint64_t num_edges, 
-		const uint64_t* seed_indices, abstract_labels labels , uint16_t num_seeds,
-		 uint16_t walk_length, double tel_prob)
+		const uint64_t* seed_indices, abstract_labels labels, cmd_args args )
 {
 	
+	
+	uint16_t num_seeds = args.num_seeds;
+	uint16_t walk_length = args.walk_length;
+	double tel_prob = args.tel_prob;
 
-	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));
-	
-	
+	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));	
 	for(uint64_t i=0;i<num_seeds;i++){seeds[i]=seed_indices[i]-1;}
 
         //Create CSR graph from edgelist 
@@ -131,7 +135,7 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 
 	make_CSR_col_stoch(&graph);
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////
 	// HANDLE LABELS
 
 	uint8_t num_class; 
@@ -142,7 +146,7 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	num_class = abstract_handle_labels(&num_per_class, &class_ind, &class, labels, num_seeds);
 
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////
 
 
 	clock_t begin = clock();
@@ -150,7 +154,8 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	double* soft_labels=malloc(num_class*graph.num_nodes*sizeof(double));
 	
 
-        my_PPR_single_thread( soft_labels, graph, num_seeds, seeds, num_class, class_ind, num_per_class, walk_length, tel_prob);
+        my_PPR_single_thread( soft_labels, graph, num_seeds, seeds, num_class,
+        		      class_ind, num_per_class, walk_length, tel_prob);
         
 	
 	if(labels.multi_label){

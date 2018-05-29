@@ -108,7 +108,8 @@ csr_graph csr_create( const uint64_t** edgelist, uint64_t num_edges ){
 	graph.degrees=(uint64_t*)malloc(2*num_edges*sizeof(uint64_t));
 
 	//Convert undirected edge list to CSR format and return graph size
-	graph.num_nodes = edge_list_to_csr(edgelist, graph.csr_value, graph.csr_column, graph.csr_row_pointer,num_edges, &graph.nnz, graph.degrees); 
+	graph.num_nodes = edge_list_to_csr(edgelist, graph.csr_value, graph.csr_column, graph.csr_row_pointer,
+					   num_edges, &graph.nnz, graph.degrees); 
 
 	printf("nnz %"PRIu64"\n",graph.nnz);
 	printf("nume_edges %"PRIu64"\n",num_edges);
@@ -175,7 +176,8 @@ uint64_t edge_list_to_csr(const uint64_t** edge, double* csr_value, uint64_t* cs
 	//printf("%d %d\n",buffer_temp[i][0],buffer_temp[i][1]);
 
 	//The first collumn of sorted array readily gives csr_row_pointer (just loop through and look for j s.t. x[j]!=x[j-1])
-	//Not sure yet but i probably need to define small dynamic subarray with elements of second collumn and sort it before stacking it it into csr_column (A: I dont need to)
+	//Not sure yet but i probably need to define small dynamic subarray with elements of second collumn and
+	// sort it before stacking it it into csr_column (A: I dont need to)
 	//This can all be done together in one loop over sorted buffer_temp
 	csr_row_pointer[0]=0;
 	csr_value[0]=1.0;

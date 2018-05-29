@@ -6,13 +6,13 @@
 
 double max_seed_val_difference(double*, double*, uint64_t* , uint16_t, uint16_t , uint16_t );  
 
-uint16_t get_slice_of_G( double* , uint64_t* , uint16_t, double , csr_graph);
+uint16_t get_slice_of_G( double* , uint64_t* , uint16_t, double , csr_graph, uint8_t);
 
 void extract_G_ll(double* , double* , uint64_t* , uint16_t  );  
 
 void* my_power_iter(void* );
 
-void AdaDIF_core_multi_thread( double* , csr_graph , uint16_t, const uint64_t* , uint8_t , uint8_t* , uint16_t* , uint16_t , double, int8_t );
+void AdaDIF_core_multi_thread( double* , csr_graph , uint16_t, const uint64_t* , uint8_t , uint8_t* , uint16_t* , uint16_t , double, int8_t , uint8_t );
 
 void* AdaDIF_squezze_to_one_thread( void* );
 
