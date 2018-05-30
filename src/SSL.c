@@ -1,14 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
- Contains SSL program that tests and implements graph-based semi-spurevised methods.
+ Contains SSL program that implements and tests graph-based semi-spurevised methods.
 
  Dimitris Berberidis 
  University of Minnesota 2017-2018
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 #include <stddef.h>
 #include <stdio.h>
@@ -21,35 +20,73 @@
 #include "Tuned_RwR.h"
 #include "AdaDIF.h"
 #include "my_IO.h"
-
 #include "my_defs.h"
-
 #include "my_utils.h"
 
 
+int SSL_predict( cmd_args );
+int SSL_test( cmd_args );
 
-
-int main(int argc, char **argv)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//MAIN
+int main( int argc, char **argv )
 {
-	double average_micro_f1=0.0, average_macro_f1=0.0; 
-
-	uint16_t iter=0;
-
 	cmd_args args;
 	
 	//Parse arguments using argument parser
 
 	parse_commandline_args(argc,argv,&args);
 
+	// Switch between operational (prediction) mode and test mode
+	if(strcmp(args.mode,"test")==0){
+		int err = SSL_test(args);
+		if(!err) printf( "SSL in test mode finished succesfully.\n" );
+	}else if(strcmp(args.mode,"predict") == 0){
+		int err = SSL_predict(args);
+		if(!err) printf( "SSL in prediction mode finished succesfully.\n" );		
+	}else{
+	   	printf("ERROR: Mode must be either `test` (default) or `predict`.\n");
+	   	exit(EXIT_FAILURE); 
+	}
+	
+	return 0;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//SSL in __operational__ mode. 
+//Produces output (predicted labels) on an output file 
+int SSL_predict(cmd_args args){
+	
+	printf("soon...\n");
+	
+	//Parse graph
 	uint64_t edge_count;
-
 	uint64_t** edge_list;
+	edge_list =  give_edge_list(args.graph_filename,&edge_count);
+	
+	//Parse labels
+	
+	//Call method	
+	
+	return 0;
+}
 
+
+//SSL in __test__ mode.
+//Takes as input all the groundtruth labels.
+//Randomly samples seeds and evaluates predictions.
+int SSL_test(cmd_args args)
+{
+	double average_micro_f1=0.0, average_macro_f1=0.0; 
+	uint16_t iter=0;
+	
+	//Parse graph
+	uint64_t edge_count;
+	uint64_t** edge_list;
 	edge_list =  give_edge_list(args.graph_filename,&edge_count);
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// HANDLE LABELS
-	
+	//Parse labels	
 	abstract_labels label_in;
 	abstract_labels all_labels;
 	abstract_label_output label_out;
@@ -63,7 +100,6 @@ int main(int argc, char **argv)
 	
 	if(args.multi_label){
 		all_labels.mlabel = read_one_hot_mat(args.label_filename, &label_count); // All true labels in one-hot-matrix form 
-		printf("CHECK!!\n");
 		label_in.mlabel = init_one_hot( all_labels.mlabel.num_class , (uint64_t) args.num_seeds); 
 		num_labels_per_node = return_num_labels_per_node( all_labels.mlabel );
 	}else{
@@ -71,19 +107,17 @@ int main(int argc, char **argv)
                 label_in.mclass = (int8_t*) malloc(args.num_seeds*sizeof(int8_t));	
 	}
 
+	//RUN EXPERIMENTS
 	uint64_t* seeds=malloc(args.num_seeds*sizeof(uint64_t));
 	uint64_t default_ind[label_count];
 	for(uint64_t i=0;i<label_count;i++){ default_ind[i]=i;}		
-
 
  	srand(time(NULL)); //seed the random number generator
 
 	for(iter=0;iter<args.num_iters;iter++){
 
-
 		random_sample(seeds, label_in, all_labels, args.num_seeds, label_count);			
 			
-
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		uint64_t graph_size;
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,19 +137,16 @@ int main(int argc, char **argv)
                         printf("Execution %"PRIu16" of PPR...",iter);
 			graph_size=my_PPR( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds, 
 					   label_in , args);			
-		}
-		
-
+		}		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if(graph_size!=label_count){printf("ERROR: graph size not matching label size\n");}
 
-	
+	        // Evaluate predictions
    		uint64_t num_unlabeled = label_count - args.num_seeds;           
    		for(uint16_t i=0;i<args.num_seeds;i++) seeds[i]-=1;     
                 uint64_t* unlabeled = remove_from_list( (const uint64_t*) default_ind ,
                 				        (const uint64_t*) seeds ,label_count , (uint64_t) args.num_seeds );
-
 
 		one_hot_mat true_one_hot,pred_one_hot;
 
@@ -126,11 +157,9 @@ int main(int argc, char **argv)
 			int8_t class[args.num_seeds];
 			uint8_t num_class = find_unique( class, (const int8_t*) label_in.mclass, args.num_seeds );			
 			pred_one_hot = list_to_one_hot( default_ind , label_out.mclass , num_class, class, label_count , label_count); 		
-			true_one_hot = list_to_one_hot( default_ind , all_labels.mclass, num_class, class, label_count , label_count); // All true labels in one-hot matrix format		
-
+			true_one_hot = list_to_one_hot( default_ind , all_labels.mclass, num_class, class, label_count , label_count); 		
  		}
-
-		
+	
 		f1_scores scores = get_averaged_f1_scores(true_one_hot, pred_one_hot, unlabeled, num_unlabeled );
 
 		average_micro_f1 += scores.micro;				
@@ -142,20 +171,16 @@ int main(int argc, char **argv)
 		free(unlabeled);
 	}
 
-
+	//Print results
 	average_micro_f1/=(double)args.num_iters;
 	average_macro_f1/=(double)args.num_iters;
 
 	printf(" Mean F1 micro: %lf\n Mean F1 macro: %lf\n ", average_micro_f1, average_macro_f1 );
 
-
 	//free buffers
 	for(uint64_t i=0;i<edge_count;i++){free(edge_list[i]);}
 	free(edge_list);
 	free(seeds);
-
-        
-
         if(args.multi_label){
         	destroy_one_hot(label_in.mlabel);
         	destroy_one_hot(all_labels.mlabel);

@@ -46,10 +46,6 @@ void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t nu
 	
 	printf("NUMBER OF THREADS: %"PRIu8" \n",NUM_THREADS);	
 
-#if 0
-	NUM_THREADS=1;
-	width = num_class;
-#endif
 
 	printf("WIDTH= %"PRIu8"\n",width);
 
@@ -155,12 +151,12 @@ void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
 				
 		double* theta = get_AdaDIF_parameters(graph.num_nodes,graph.degrees,land_prob,dif_land_prob,seed_indices,local_seeds,
 		                                      class_ind+i*num_seeds,walk_length,num_seeds,num_per_class[i],lambda,no_constr );
-
+#if PRINT_THETAS
 		printf("THETA: ");
 		int n;
 		for(n=0;n<walk_length;n++){printf(" %.3lf",theta[n]);}
 		printf("\n");		
-
+#endif
 	 
 		matvec_trans_long( soft_labels+i*graph.num_nodes , land_prob, theta, graph.num_nodes, walk_length );
 

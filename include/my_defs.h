@@ -2,6 +2,7 @@
 #define MY_DEFS_H_
 
 #define DEBUG 0
+#define PRINT_THETAS 0
 
 //Input buffer sizes
 
@@ -38,6 +39,8 @@
 #define DEFAULT_METHOD_IND 1
 
 #define DEFAULT_SINGLE_THREAD 0
+
+#define DEFAULT_MODE "test"
 
 //Default TunedRwR values
 
@@ -129,6 +132,7 @@ typedef struct{
 	char* graph_filename;
 	char* label_filename;
 	char* method;
+	char* mode;
 	uint16_t walk_length;
 	uint8_t method_index;
 	uint8_t no_constr;
