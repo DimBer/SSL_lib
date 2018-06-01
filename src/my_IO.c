@@ -51,7 +51,8 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 			      .method = DEFAULT_METHOD,
 			      .method_index = DEFAULT_METHOD_IND,
 			      .single_thread = DEFAULT_SINGLE_THREAD,
-			      .mode = DEFAULT_MODE };
+			      .mode = DEFAULT_MODE,
+			      .outfile = DEFAULT_OUTFILE };
 
 
 	int opt= 0;
@@ -71,6 +72,7 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 		{"multilabel",   no_argument, 0,  'k' },
 		{"single_thread",   no_argument, 0,  'l' }, 		
 		{"mode", required_argument, 0 , 'm' }, 
+		{"outfile", required_argument, 0 , 'n' }, 		
 		{0,           0,                 0,  0   }	
 	};
 
@@ -148,6 +150,9 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 				   break;			
 			case 'm' : args->mode = optarg;
 				   break;
+			case 'n' : args->outfile = optarg;
+				   break;
+				   
 				   exit(EXIT_FAILURE);
 		}
 	}

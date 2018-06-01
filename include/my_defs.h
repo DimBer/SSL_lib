@@ -6,8 +6,8 @@
 
 //Input buffer sizes
 
-#define EDGE_BUFF_SIZE 10000000
-#define CLASS_BUFF_SIZE 10000000
+#define EDGE_BUFF_SIZE 5000000
+#define CLASS_BUFF_SIZE 5000000
 
 
 //Default command line arguments
@@ -33,6 +33,8 @@
 #define DEFAULT_GRAPH "graphs/pubmed_adj.txt"
 
 #define DEFAULT_LABEL "graphs/pubmed_label.txt"
+
+#define DEFAULT_OUTFILE "out/label_predictions.txt"
 
 #define DEFAULT_METHOD "AdaDIF"
 
@@ -106,7 +108,7 @@ typedef struct{
 // Abstract label formats (list or one-hot-matrix)
 
 typedef struct{	
-	uint8_t multi_label;
+	uint8_t multi_label; 
 	int8_t* mclass;	
 	one_hot_mat mlabel;
 } abstract_labels;
@@ -118,8 +120,12 @@ typedef struct{
 	double* mlabel;		
 } abstract_label_output;
 
+//Double and index struct for sorting and keeping indexes
 
-
+typedef struct{
+	double val;
+	int ind;
+} val_and_ind;
 
 //struct forcommand line arguments
 
@@ -133,6 +139,7 @@ typedef struct{
 	char* label_filename;
 	char* method;
 	char* mode;
+	char* outfile;
 	uint16_t walk_length;
 	uint8_t method_index;
 	uint8_t no_constr;

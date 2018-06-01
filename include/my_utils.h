@@ -13,6 +13,8 @@ void random_sample( uint64_t* , abstract_labels , abstract_labels , uint16_t , u
 
 int compare ( const void* , const void* );
 
+int compare2 ( const void* , const void* );
+
 double frob_norm(double*,uint16_t);
 
 double mean(double* , int );
@@ -32,6 +34,8 @@ void project_to_simplex( double* , uint16_t  );
 double max_diff(double* , double* , uint16_t );
 
 uint8_t find_unique(int8_t* , const int8_t* ,uint16_t );
+
+uint64_t* find_unique_from_sorted( uint64_t* , uint64_t , uint16_t* );
 
 void my_array_sub(double*, double* , double*, uint64_t );
 
@@ -56,6 +60,10 @@ uint64_t**  give_edge_list( char* , uint64_t* );
 uint64_t read_adjacency_to_buffer(uint64_t**,FILE*);
 
 int8_t* read_labels(char* , uint64_t*);
+
+uint64_t* read_seed_file( char*, uint16_t*,uint8_t* , abstract_labels* );		
+
+void save_predictions(char* , abstract_label_output , uint64_t , uint8_t );
 
 void predict_labels( int8_t* , double* , int8_t* ,uint64_t , uint8_t );
 

@@ -105,6 +105,15 @@ int compare ( const void *pa, const void *pb )
 		return a[0] - b[0];
 }  
 
+//My comparator for a struct with double and index
+int compare2 ( const void *pa, const void *pb ) 
+{
+  val_and_ind *a1 = (val_and_ind*)pa;
+  val_and_ind *a2 = (val_and_ind*)pb;
+  if((*a1).val>(*a2).val)return -1;
+  else if((*a1).val<(*a2).val)return 1;
+  else return 0;
+}  
 
 //frobenious norm of double-valued square matrix
 double frob_norm(double* A, uint16_t dim){
@@ -394,6 +403,8 @@ uint64_t** give_edge_list( char* file_name, uint64_t* count ){
 
 	FILE* file= fopen(file_name, "r");
 
+	if(!file) printf("ERROR: Cannot open graph file");
+
 	// Read adjacency into buffer into buffer and return length count=edges
 	*count= read_adjacency_to_buffer(buffer,file);
 	printf("Number of edges: %"PRIu64"\n", *count);
@@ -430,6 +441,8 @@ int8_t* read_labels(char* filename, uint64_t* label_count){
 	int8_t* buffer = (int8_t*) malloc(sizeof(int8_t)*CLASS_BUFF_SIZE);
 	FILE* file= fopen(filename, "r");
 
+	if(!file) printf("ERROR: Cannot open label file");
+
 	for (; count < CLASS_BUFF_SIZE; ++count)
 	{
 		int got = fscanf(file, "%"SCNu64"%"SCNi8"", &indexes[count] , &buffer[count]);
@@ -449,12 +462,89 @@ int8_t* read_labels(char* filename, uint64_t* label_count){
 	return buffer;
 }
 
+//Read seed and label file when in operation mode
+uint64_t* read_seed_file( char* filename, uint16_t* num_seeds, uint8_t* num_class, abstract_labels* label_in ){
+
+        //First read file into buffers
+	uint64_t count = 0;
+	uint64_t* index_buffer = (uint64_t*) malloc(sizeof(uint64_t)*CLASS_BUFF_SIZE);
+	int8_t* label_buffer = (int8_t*) malloc(sizeof(int8_t)*CLASS_BUFF_SIZE);
+	FILE* file= fopen(filename, "r");
+
+	if(!file) printf("ERROR: Cannot open seed file");
+
+	for (; count < CLASS_BUFF_SIZE; ++count)
+	{
+		int got = fscanf(file, "%"SCNu64"%"SCNi8"", &index_buffer[count] , &label_buffer[count]);
+		if (got != 2) break; // wrong number of tokens - maybe end of file
+	}
+	fclose(file);
+	label_buffer = realloc(label_buffer,sizeof(int8_t)*count);
+	index_buffer = realloc(index_buffer,sizeof(uint64_t)*count);
+	
+	//prepare input labels and seeds for multi_label or multi_class
+	
+	uint64_t* seed_indices;
+	
+	if(label_in->multi_label){		
+		*num_class = max_u8( (uint8_t*) label_buffer, count);		
+		my_relative_sorting( index_buffer, label_buffer, count );
+		seed_indices = find_unique_from_sorted( index_buffer, count , num_seeds );
+
+		label_in->mlabel = init_one_hot(*num_class , *num_seeds);
+		uint64_t j=0;
+		for(uint64_t i=0;i<count;i++){
+			if(i>0) j = (index_buffer[i] == index_buffer[i-1] ) ? j : j+1;
+			label_in->mlabel.bin[label_buffer[i]-1][j]=1;
+		}
+		
+	        free(index_buffer);
+		free(label_buffer);		
+	}else{
+		seed_indices = index_buffer;
+		label_in->mclass = label_buffer;
+		*num_seeds = (uint16_t) count;
+	}
+	
+	return seed_indices;
+}	
+
+
+//write predicted labels (or ranking in multilabel case) to output file
+void save_predictions(char* filename, abstract_label_output label_out, uint64_t len, uint8_t num_class){
+	
+	FILE* file = fopen(filename, "w");	
+	
+	if(!file) printf("ERROR: Cannot open outfile");
+	
+	if(label_out.multi_label){ 
+		val_and_ind line_of_out[num_class];
+		for(uint64_t i=0; i<len; i++){
+			for(uint8_t j=0; j<num_class; j++) line_of_out[j] = (val_and_ind) {.val = label_out.mlabel[j*len + i], .ind=(int)j}; 
+				
+			qsort( line_of_out, num_class, sizeof(line_of_out[0]), compare2);
+			
+			fprintf(file, "%"SCNu64":\t", i+1 );
+			
+			for(uint8_t j=0; j<num_class; j++) fprintf(file, "%"SCNu8" ", line_of_out[j].ind +1 );
+			
+			fprintf(file, "\n");
+		}
+	}else{
+		for(uint64_t i=0; i<len; i++) fprintf(file, "%"SCNu64"\t%"SCNi8"\n", i+1 , label_out.mclass[i]);	
+	}
+	
+	fclose(file);
+}
+
 //Read class.txt file into one_hot_matrix (ignore first collumn here)
 one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
 	uint64_t count = 0;
 	uint64_t* indexes = (uint64_t*) malloc(sizeof(uint64_t)*CLASS_BUFF_SIZE);
 	uint8_t* buffer = (uint8_t*) malloc(sizeof(uint8_t)*CLASS_BUFF_SIZE);
 	FILE* file = fopen(filename, "r");
+
+	if(!file) printf("ERROR: Cannot open label file");
 
 	for (; count < CLASS_BUFF_SIZE; ++count)
 	{
@@ -483,7 +573,7 @@ one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
 	return all_labels;
 }
 
-// Sort A with respect to indexes
+// Sort A and ind with respect to indexes in ind
 void my_relative_sorting( uint64_t* ind, int8_t* A, uint64_t len ){ 
 	uint64_t* temp = (uint64_t*)malloc(len*sizeof(uint64_t));
 	uint64_t* sorted_inds = (uint64_t*)malloc(len*sizeof(uint64_t));
@@ -633,6 +723,22 @@ uint8_t find_unique(int8_t* unique_elements, const int8_t* buffer,uint16_t N){
 
 	}
 	return end;
+}
+
+//Find unique entries from list of sorted (unisgned indexes) 
+uint64_t* find_unique_from_sorted( uint64_t* sorted_buffer, uint64_t len , uint16_t* num_unique ){
+	uint64_t* unique = (uint64_t*) malloc(len*sizeof(uint64_t));
+	*num_unique = 1;
+	
+	unique[0] = sorted_buffer[0]; 
+	for(uint64_t i=1;i<len;i++){
+		if(!(sorted_buffer[i] == sorted_buffer[i-1] )){
+			*num_unique += 1;
+			unique[*num_unique-1] = sorted_buffer[i];	
+		}		
+	} 	
+	unique = realloc(unique,*num_unique*sizeof(uint64_t));
+	return unique;
 }
 
 // Converts list to one hot binary matrix of one_hot_mat type
