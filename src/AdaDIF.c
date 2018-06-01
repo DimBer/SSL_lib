@@ -78,8 +78,6 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	clock_t begin = clock();
 
 	double* soft_labels=malloc(num_class*graph.num_nodes*sizeof(double));
-	
- 	printf("CHECK.........\n");
 
         AdaDIF_core_multi_thread( soft_labels, graph, num_seeds, seeds, num_class, class_ind,
         			   num_per_class, walk_length, lambda, no_constr, args.single_thread);
@@ -100,21 +98,20 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	printf("Num edges: %"PRIu64"\n", graph.nnz);
 
 	printf("Runtime: %lf\n ", time_spent);
-          
+
+	#if DEBUG          
 	double sum=0.0f;
 	for(uint64_t i=0;i<graph.num_nodes;i++){
 		for(int j=0;j<num_class;j++){
-//			printf("%lf  ",soft_labels[j*graph.num_nodes + i]);
 			sum+=soft_labels[j*graph.num_nodes + i];
 		}		
-//		printf("\n");
 	}
-	
 	printf("Check sum: %lf \n",sum);
   	        
 	printf("\n");
 	for(int j=0;j<num_class;j++){printf("%"PRId8", ",class[j]);}
 	printf("\n");
+	#endif		
 	
 	//free buffers
 	free(soft_labels);
@@ -147,7 +144,6 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
         //Create CSR graph from edgelist 
 
         csr_graph graph = csr_create(edge_list,num_edges);
-
 	assert_all_nodes_present(graph,seed_indices,num_seeds);
 
 	//Normalize csr_value to column stochastic
@@ -195,22 +191,20 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	printf("Num edges: %"PRIu64"\n", graph.nnz);
 
 	printf("Runtime: %lf\n ", time_spent);
-          
+	
+	#if DEBUG          
 	double sum=0.0f;
 	for(uint64_t i=0;i<graph.num_nodes;i++){
 		for(int j=0;j<num_class;j++){
-//			printf("%lf  ",soft_labels[j*graph.num_nodes + i]);
 			sum+=soft_labels[j*graph.num_nodes + i];
 		}		
-//		printf("\n");
 	}
-	
 	printf("Check sum: %lf \n",sum);
-  	
-        
+  	        
 	printf("\n");
 	for(int j=0;j<num_class;j++){printf("%"PRId8", ",class[j]);}
 	printf("\n");
+	#endif	
 	
 	//free buffers
 	free(soft_labels);

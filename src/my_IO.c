@@ -31,8 +31,6 @@
 
 const char *method_list[NUM_METHODS]={"Tuned_RwR", "AdaDIF", "AdaDIF_LOO","PPR"};
 
- 
-
 //Parsing command line arguments with getopt_long_only
 void parse_commandline_args(int argc,char** argv , cmd_args* args){
 
@@ -160,8 +158,6 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 }
 
 
-
-
 // Take array of labels and return number of classes, list of classes and indicator vectors
 uint8_t handle_labels(const int8_t* labels, uint16_t L, int8_t* class,
 		      uint8_t* class_ind , uint16_t* num_per_class ){
@@ -208,8 +204,6 @@ uint8_t abstract_handle_labels( uint16_t** num_per_class, uint8_t** class_ind, i
 				*(*class_ind + (i*num_seeds + j)) = labels.mlabel.bin[i][j];
 				}
 		}
-		
- 
 	}else{
 		*num_per_class =  malloc(num_seeds*sizeof(uint16_t));
 		*class_ind =  malloc(num_seeds*num_seeds*sizeof(uint8_t));

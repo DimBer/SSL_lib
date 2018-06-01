@@ -43,7 +43,6 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 	uint16_t num_seeds = args.num_seeds;
 	double tel_prob = args.tel_prob;
 	double lambda = args.lambda_trwr;	
-
 	uint64_t i;
 	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));
 
@@ -53,9 +52,7 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 	//Create CSR graph from edgelist 
 
 	csr_graph graph = csr_create(edge_list,num_edges);
-
 	assert_all_nodes_present(graph,seed_indices,num_seeds);
-
 
 	//Normalize csr_value to column stochastic
 
@@ -124,6 +121,7 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 
 	printf("Number of iterations: %"PRIu16"\n ", iters);
 
+        #if DEBUG
 	double sum=0.0f;
 	for(i=0;i<graph.num_nodes;i++){
 		int j=0;
@@ -135,7 +133,9 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 	}
 
 	printf("Check sum: %lf \n",sum);
+        #endif	
 
+        //free
 	free(G_s);
 	free(G_ll);
 	free(theta);

@@ -10,7 +10,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,11 +30,7 @@ static uint16_t tune_parameters( double* , double* , uint8_t* , uint16_t , doubl
 static double max_abs_dif(double*, double*, double*, uint64_t );
 static double cost_func(double*,double*,double*,uint16_t);
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 //Evaluates quadtratic with Hessian A and linear part b at x
@@ -54,7 +49,6 @@ static inline double cost_func(double* A, double* b, double* x, uint16_t len){
 } 
 
 
-
 //Infinity norm
 
 static double max_abs_dif(double* a, double* b, double* Hess, uint64_t len ){
@@ -71,8 +65,6 @@ static double max_abs_dif(double* a, double* b, double* Hess, uint64_t len ){
 
 
 
-
-
 //Solving quadratic minimization over the probability simplex via projected gradient
 //Used by AdaDIF and AdaDIF_LOO
 // The following function returns x =arg min {x^T*A*x +x^T*B} s.t. x in Prob. Simplex
@@ -82,13 +74,9 @@ void simplex_constr_QP_with_PG(double* x, double* A, double* b, uint16_t K){
 	double* x_temp=malloc(K*sizeof(double));
 	double* x_prev=malloc(K*sizeof(double));		
 			
-
 //	step_size = STEPSIZE_2;
-	
 //	step_size = STEPSIZE_2/pow(frob_norm(A,K), 2.0f);
-
 	step_size = STEPSIZE_2/frob_norm(A,K);
-
 
 	//Initialize to uniform
 	for(i=0;i<K;i++){x[i]=1.0f/(double)K;}
@@ -110,12 +98,10 @@ void simplex_constr_QP_with_PG(double* x, double* A, double* b, uint16_t K){
 	        	x[j]-= step_size*( 2.0f*x_temp[j] +b[j] ); 
 		}
 		
-
-		//Project onto simplex
-
+		
 		project_to_simplex( x , K );
 		
-		#if 0
+                #if DEBUG
 		printf("\n COST: ");
 		printf(" %lf ",cost_func(A,b,x,K));
 		#endif	
@@ -125,8 +111,7 @@ void simplex_constr_QP_with_PG(double* x, double* A, double* b, uint16_t K){
 		memcpy(x_prev,x,K*sizeof(double));
 	
 	}while( i<MAXIT_GD &&  inf_norm>GD_TOL_2 );	
-	
-	
+		
 	printf("\n Optimization finished after: %"PRIu32" iterations\n",i);
 	
 	free(x_temp);
@@ -154,7 +139,7 @@ void hyperplane_constr_QP(double* x, double* A, double* b, uint16_t K){
 	}
 	
 	
-#if DEBUG
+       #if DEBUG
 	uint16_t j;
 
 	printf("A:");
@@ -171,17 +156,13 @@ void hyperplane_constr_QP(double* x, double* A, double* b, uint16_t K){
 		for(j=0;j<K;j++){A_temp[i][j]=0.0;}
 		A_temp[i][i]=2.0 + L2_REG_LAMBDA;
 	}			
-#endif
+        #endif
 
 	//First the LU decoposition of A
 	LUPDecompose(A_temp, (int)K , LU_TOL , Perm);
 
 	//The unconstrained solution 
 	double* x_unc =(double*)malloc(K*sizeof(double));
-	
-//	LUPSolve(A_temp, Perm, b, (int)K, x);
- 	
-
 
 	LUPSolve(A_temp, Perm, b, (int)K, x_unc);
 
@@ -209,17 +190,14 @@ void hyperplane_constr_QP(double* x, double* A, double* b, uint16_t K){
 	for(i=0;i<K;i++){
 		x[i] = x_unc[i] - x_all_ones[i];
 	}	
-
-		 
-
+ 
+        //free
 	free(all_ones_lambda_star);
 	free(x_all_ones);
 	free(x_unc);
 	free(Perm);
 	free(A_temp);	
 }
-
-
 
 
 
@@ -272,11 +250,6 @@ static uint16_t tune_parameters( double* x, double* G_ll,  uint8_t* ind , uint16
 				x_t[j]= x[j] - step_size*( x_temp[j] + lambda*( x[j] - one_over_neg ) ); 
 			}
 		}
-
-		/*cost_next = cost_fun (res, x , one_over_pos, one_over_neg, ind ,L,lambda);
-		  marg = fabs( cost_pre - cost_next );
-		  cost_pre = cost_next;
-		  printf("%lf\n", cost_next);*/
 
 		max_grad=max_diff(x_t,x,L);
 		ratio= max_grad/max_grad_prev;
@@ -347,8 +320,6 @@ void tune_all_parameters(double* theta,double* G_ll, uint8_t* class_ind, uint16_
 		uint8_t* this_class_ind=malloc(num_seeds*sizeof(uint8_t));
 
 		for(j=0;j<num_seeds;j++){this_class_ind[j]=class_ind[i*num_seeds + j];}
-
-		printf("CHECK 1\n");
 
 		iters = tune_parameters(this_theta, G_ll, this_class_ind ,num_seeds,lambda,
 				        num_per_class[i], step_size);

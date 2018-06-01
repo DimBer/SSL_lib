@@ -56,10 +56,6 @@ int main( int argc, char **argv )
 
 
 
-
-
-
-
 //SSL in __operational__ mode. 
 //Produces output (predicted labels) on an output file 
 int SSL_predict(cmd_args args){
@@ -119,15 +115,6 @@ int SSL_predict(cmd_args args){
 	
 	return 0;
 }
-
-
-
-
-
-
-
-
-
 
 
 

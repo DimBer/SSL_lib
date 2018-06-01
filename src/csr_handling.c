@@ -121,16 +121,14 @@ csr_graph csr_create( const uint64_t** edgelist, uint64_t num_edges ){
 	graph.num_nodes = edge_list_to_csr(edgelist, graph.csr_value, graph.csr_column, graph.csr_row_pointer,
 					   num_edges, &graph.nnz, graph.degrees); 
 
-	printf("nnz %"PRIu64"\n",graph.nnz);
-	printf("nume_edges %"PRIu64"\n",num_edges);
+//	printf("nnz %"PRIu64"\n",graph.nnz);
+	printf("num_edges %"PRIu64"\n",num_edges);
 	
-
 	graph.csr_row_pointer = realloc(graph.csr_row_pointer, (graph.num_nodes+1)*sizeof(uint64_t));
 	graph.csr_value = realloc(graph.csr_value, graph.nnz*sizeof(double));
 	graph.csr_column = realloc(graph.csr_column, graph.nnz*sizeof(uint64_t));
 	graph.degrees = realloc(graph.degrees, graph.num_nodes*sizeof(uint64_t));
-	
-		
+			
 	return graph;
 	
 }
@@ -163,8 +161,6 @@ void make_CSR_col_stoch(csr_graph* graph){
 	
 }
 
-
-
 //Convert directed edgelist into undirected csr_matrix
 uint64_t edge_list_to_csr(const uint64_t** edge, double* csr_value, uint64_t* csr_column,
 			  uint64_t* csr_row_pointer, uint64_t len, uint64_t* nnz, uint64_t* degrees){
@@ -182,8 +178,6 @@ uint64_t edge_list_to_csr(const uint64_t** edge, double* csr_value, uint64_t* cs
 	}
 	//QuickSort buffer_temp with respect to first column (Study and use COMPARATOR function for this)
 	qsort(edge_temp, 2*len, sizeof(edge_temp[0]), compare); 
-	//for(i=0;i<20;i++)
-	//printf("%d %d\n",buffer_temp[i][0],buffer_temp[i][1]);
 
 	//The first collumn of sorted array readily gives csr_row_pointer (just loop through and look for j s.t. x[j]!=x[j-1])
 	//Not sure yet but i probably need to define small dynamic subarray with elements of second collumn and
@@ -196,7 +190,6 @@ uint64_t edge_list_to_csr(const uint64_t** edge, double* csr_value, uint64_t* cs
 	count_nnz=1;
 	for(i=1;i<2*len;i++){
 		if(!(edge_temp[i-1][0]==edge_temp[i][0] && edge_temp[i-1][1]==edge_temp[i][1])){
-//			printf("%"PRIu64" %"PRIu64"\n",edge_temp[i][0],edge_temp[i][1]);
 			csr_value[count_nnz]=1.0;
 			csr_column[count_nnz]=edge_temp[i][1]-1;
 			if(edge_temp[i][0]!=edge_temp[i-1][0]){
@@ -216,8 +209,6 @@ uint64_t edge_list_to_csr(const uint64_t** edge, double* csr_value, uint64_t* cs
 	free(edge_temp);
 	return j;
 }
-
-
 
 
 //Subroutine: take x, multiply with csr matrix from right and store result in y

@@ -46,8 +46,9 @@ void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t nu
 	
 	printf("NUMBER OF THREADS: %"PRIu8" \n",NUM_THREADS);	
 
-
+	#if DEBUG
 	printf("WIDTH= %"PRIu8"\n",width);
+	#endif	
 
 	clock_t begin = clock();
 
@@ -151,12 +152,12 @@ void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
 				
 		double* theta = get_AdaDIF_parameters(graph.num_nodes,graph.degrees,land_prob,dif_land_prob,seed_indices,local_seeds,
 		                                      class_ind+i*num_seeds,walk_length,num_seeds,num_per_class[i],lambda,no_constr );
-#if PRINT_THETAS
+		#if PRINT_THETAS
 		printf("THETA: ");
 		int n;
 		for(n=0;n<walk_length;n++){printf(" %.3lf",theta[n]);}
 		printf("\n");		
-#endif
+		#endif
 	 
 		matvec_trans_long( soft_labels+i*graph.num_nodes , land_prob, theta, graph.num_nodes, walk_length );
 
@@ -179,8 +180,6 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 	double* seed_vector = (double*) malloc(graph.num_nodes* sizeof(double));
 	double one_over_num_seeds = 1.0f /(double) num_seeds ;
 
-	printf("NUM NODES: %"PRIu64"\n",graph.num_nodes);
-
 	//prepare seed vector
 	for(i=0;i<graph.num_nodes;i++){ seed_vector[i] = 0.0f ;}
 	for(j=0;j<num_seeds;j++){			
@@ -198,11 +197,11 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 			      land_prob+j*graph.num_nodes, graph.num_nodes);
 	}
 
-#if DEBUG
+	#if DEBUG
 	printf("LAST LAND PROBs: \n");
 	for(i=0;i<=100;i++){ printf(" %lf ",land_prob[(walk_length-1)*graph.num_nodes + i ]) ;}
 	printf("...................... \n");
-#endif		
+	#endif		
 
 	//do one final step to obtain the last differential
 
@@ -211,7 +210,7 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 	my_array_sub( dif_land_prob+(walk_length-1)*graph.num_nodes, land_prob+(walk_length-1)*graph.num_nodes,
 		      extra_step, graph.num_nodes);	
 
-
+        //free
 	free(seed_vector);
 	free(extra_step);
 }
@@ -237,8 +236,10 @@ double* get_AdaDIF_parameters( uint64_t N, uint64_t* degrees, double* land_prob,
 		hyperplane_constr_QP(theta,A,b,walk_length);
 	}
 
+        //free
 	free(b);
-	free(A);	
+	free(A);
+		
 	return theta;
 }
 
@@ -283,15 +284,12 @@ uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, doubl
 
 	csr_graph graph_scaled = csr_deep_copy_and_scale(graph,1.0f-tel_prob);
 
-
 	double* G_s_next=malloc(graph.num_nodes*num_seeds*sizeof(double));
-
 
 	//Initialization
 	for(i=0;i<graph.num_nodes*num_seeds;i++){G_s[i]=0.0f;}
 
 	for(j=0;j<num_seeds;j++){ G_s[ num_seeds*seeds[j] +j]=1.0f; }
-
 
 	clock_t begin = clock();
 
@@ -362,7 +360,6 @@ void* my_power_iter(void* param){
 	double* G_s_next= data->G_s_next;
 	csr_graph graph=data->graph;
 
-
 	//Iterate using this "back and forth method" to minimize memory access
 	clock_t begin = clock();
 	do{
@@ -402,7 +399,6 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 			   uint16_t* num_per_class, uint16_t walk_length, double tel_prob){
 
 	csr_graph graph_scaled = csr_deep_copy_and_scale(graph,1.0f-tel_prob);
-	printf("Number of local classes%"PRIu8"\n",num_class); 
 	uint8_t i;
 	for(i=0;i<num_class;i++){		
 		uint16_t j,k=0;
@@ -419,8 +415,6 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 		double one_over_num_seeds = 1.0f /(double) num_per_class[i] ;
 		for(n=0;n<graph.num_nodes;n++){ soft[n] = 0.0f ;}
 		for(j=0;j<num_per_class[i];j++){soft[local_seeds[j]] = one_over_num_seeds ;}
-
-		printf("CHECK\n");
 
 		//perform random walk with restart
 		uint8_t flag=0;
@@ -442,16 +436,12 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 			memcpy(soft, soft_next, graph.num_nodes*sizeof(double));
 		}		
 
-
 		free(soft_next);
 		free(local_seeds);
 
 	} 
 	csr_destroy(graph_scaled);
 }
-
-
-
 
 
 
