@@ -30,6 +30,7 @@
 #include <time.h>
 #include <inttypes.h>
 
+#include "AdaDIF.h"
 #include "csr_handling.h"
 #include "comp_engine.h"
 #include "parameter_opt.h"
@@ -48,7 +49,7 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	uint8_t no_constr = args.no_constr;	
 
 	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));	
-	for(uint64_t i=0;i<num_seeds;i++){seeds[i]=seed_indices[i]-1;}
+	for(uint16_t i=0;i<num_seeds;i++) seeds[i]=seed_indices[i]-1;
 
         //Create CSR graph from edgelist 
 
@@ -79,9 +80,11 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 
 	double* soft_labels=malloc(num_class*graph.num_nodes*sizeof(double));
 
+
         AdaDIF_core_multi_thread( soft_labels, graph, num_seeds, seeds, num_class, class_ind,
         			   num_per_class, walk_length, lambda, no_constr, args.single_thread);
-        	
+        
+        //prepare label output	
 	if(labels.multi_label){
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
@@ -102,14 +105,13 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	#if DEBUG          
 	double sum=0.0f;
 	for(uint64_t i=0;i<graph.num_nodes;i++){
-		for(int j=0;j<num_class;j++){
-			sum+=soft_labels[j*graph.num_nodes + i];
-		}		
+		for(int j=0;j<num_class;j++)
+			sum+=soft_labels[j*graph.num_nodes + i];	
 	}
 	printf("Check sum: %lf \n",sum);
   	        
 	printf("\n");
-	for(int j=0;j<num_class;j++){printf("%"PRId8", ",class[j]);}
+	for(int j=0;j<num_class;j++) printf("%"PRId8", ",class[j]);
 	printf("\n");
 	#endif		
 	
@@ -139,7 +141,7 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	double tel_prob = args.tel_prob;
 
 	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));	
-	for(uint64_t i=0;i<num_seeds;i++){seeds[i]=seed_indices[i]-1;}
+	for(uint64_t i=0;i<num_seeds;i++) seeds[i]=seed_indices[i]-1;
 
         //Create CSR graph from edgelist 
 
@@ -172,7 +174,7 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
         my_PPR_single_thread( soft_labels, graph, num_seeds, seeds, num_class,
         		      class_ind, num_per_class, walk_length, tel_prob);
         
-	
+	//prepare label output
 	if(labels.multi_label){
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
@@ -195,14 +197,13 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	#if DEBUG          
 	double sum=0.0f;
 	for(uint64_t i=0;i<graph.num_nodes;i++){
-		for(int j=0;j<num_class;j++){
+		for(int j=0;j<num_class;j++)
 			sum+=soft_labels[j*graph.num_nodes + i];
-		}		
 	}
 	printf("Check sum: %lf \n",sum);
   	        
 	printf("\n");
-	for(int j=0;j<num_class;j++){printf("%"PRId8", ",class[j]);}
+	for(int j=0;j<num_class;j++) printf("%"PRId8", ",class[j]);
 	printf("\n");
 	#endif	
 	

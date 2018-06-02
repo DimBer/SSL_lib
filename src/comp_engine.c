@@ -38,7 +38,7 @@ void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t nu
 			       const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
 			       uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr, uint8_t single_thread){
 
-	uint8_t i,NUM_THREADS, width;
+	uint8_t NUM_THREADS, width;
 
 	NUM_THREADS = get_threads_and_width(&width, num_class);
 	
@@ -67,7 +67,7 @@ void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t nu
 
 	pthread_t tid[NUM_THREADS];			
 	pass_to_thread_type_2* data= (pass_to_thread_type_2*)malloc(NUM_THREADS*sizeof(pass_to_thread_type_2));	
-	for(i=0;i<NUM_THREADS;i++){		
+	for(uint8_t i=0;i<NUM_THREADS;i++){		
 		(*(data+i))= (pass_to_thread_type_2) {.soft_labels=soft_labels, 
 			     			      .num_seeds=num_seeds,
 						      .num_per_class=num_per_class,
@@ -89,12 +89,12 @@ void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t nu
 	}
 
 	//Spawn threads and start running
-	for(i=0;i<NUM_THREADS;i++){
+	for(uint8_t i=0;i<NUM_THREADS;i++){
 		pthread_create(&tid[i],NULL,AdaDIF_squezze_to_one_thread,(void*)(data+i));		
 	}
 
 	//Wait for all threads to finish before continuing	
-	for(i=0;i<NUM_THREADS;i++){pthread_join(tid[i], NULL);}
+	for(uint8_t i=0;i<NUM_THREADS;i++){pthread_join(tid[i], NULL);}
 
 	//Free copies and temporary arrays
 
@@ -132,20 +132,20 @@ void* AdaDIF_squezze_to_one_thread( void* param){
 void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
 		  const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
 		  uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr){       
+		  
 	printf("Number of local classes%"PRIu8": \n",num_class); 
-	uint8_t i;
-	for(i=0;i<num_class;i++){		
+	
+	for(uint8_t i=0;i<num_class;i++){		
+	
 		double* land_prob = (double*) malloc(walk_length*graph.num_nodes*sizeof(double));
 		double* dif_land_prob = (double*) malloc(walk_length*graph.num_nodes*sizeof(double));
-		uint16_t j,k=0;
 		uint64_t* local_seeds =(uint64_t*)malloc(num_per_class[i] *sizeof(uint64_t));    		
 
-
-		for(j=0;j<num_seeds;j++){ 
+		uint16_t k=0;
+		for(uint16_t j=0;j<num_seeds;j++){ 
 			if( class_ind[i*num_seeds + j] ==1 )			
 				local_seeds[k++] = seed_indices[j];
 		}
-
 
 		perform_random_walk(land_prob, dif_land_prob, graph , walk_length , local_seeds , num_per_class[i] );
 
@@ -154,13 +154,11 @@ void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
 		                                      class_ind+i*num_seeds,walk_length,num_seeds,num_per_class[i],lambda,no_constr );
 		#if PRINT_THETAS
 		printf("THETA: ");
-		int n;
-		for(n=0;n<walk_length;n++){printf(" %.3lf",theta[n]);}
+		for(int n=0;n<walk_length;n++) printf(" %.3lf",theta[n]);
 		printf("\n");		
 		#endif
 	 
 		matvec_trans_long( soft_labels+i*graph.num_nodes , land_prob, theta, graph.num_nodes, walk_length );
-
 
 		//free landing probabilities
 		free(local_seeds);
@@ -175,23 +173,19 @@ void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
 
 void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph graph,
 			 uint16_t walk_length , uint64_t* seeds , uint16_t num_seeds ){
-	uint64_t i;	
-	uint16_t j;
+
 	double* seed_vector = (double*) malloc(graph.num_nodes* sizeof(double));
 	double one_over_num_seeds = 1.0f /(double) num_seeds ;
 
 	//prepare seed vector
-	for(i=0;i<graph.num_nodes;i++){ seed_vector[i] = 0.0f ;}
-	for(j=0;j<num_seeds;j++){			
-		seed_vector[seeds[j]] = one_over_num_seeds ;
-	}
-
+	for(uint64_t i=0;i<graph.num_nodes;i++) seed_vector[i] = 0.0f ;
+	
+	for(uint16_t j=0;j<num_seeds;j++) seed_vector[seeds[j]] = one_over_num_seeds ;
 
 	//do the random walk
 	my_CSR_matvec( land_prob, seed_vector , graph);  
 
-
-	for(j=1;j<walk_length;j++){
+	for(uint16_t j=1;j<walk_length;j++){
 		my_CSR_matvec( land_prob+j*graph.num_nodes, land_prob+(j-1)*graph.num_nodes , graph);	
 		my_array_sub( dif_land_prob+(j-1)*graph.num_nodes, land_prob+(j-1)*graph.num_nodes,
 			      land_prob+j*graph.num_nodes, graph.num_nodes);
@@ -199,7 +193,7 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 
 	#if DEBUG
 	printf("LAST LAND PROBs: \n");
-	for(i=0;i<=100;i++){ printf(" %lf ",land_prob[(walk_length-1)*graph.num_nodes + i ]) ;}
+	for(uint64_t i=0;i<=100;i++) printf(" %lf ",land_prob[(walk_length-1)*graph.num_nodes + i ]) ;
 	printf("...................... \n");
 	#endif		
 
@@ -279,7 +273,6 @@ uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, doubl
 	
 	if(single_thread) NUM_THREADS = 1;
 
-	uint64_t i,j;
 	uint16_t iter[NUM_THREADS];
 
 	csr_graph graph_scaled = csr_deep_copy_and_scale(graph,1.0f-tel_prob);
@@ -287,9 +280,9 @@ uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, doubl
 	double* G_s_next=malloc(graph.num_nodes*num_seeds*sizeof(double));
 
 	//Initialization
-	for(i=0;i<graph.num_nodes*num_seeds;i++){G_s[i]=0.0f;}
+	for(uint64_t i=0;i<graph.num_nodes*num_seeds;i++) G_s[i]=0.0f;
 
-	for(j=0;j<num_seeds;j++){ G_s[ num_seeds*seeds[j] +j]=1.0f; }
+	for(uint16_t j=0;j<num_seeds;j++) G_s[ num_seeds*seeds[j] +j]=1.0f; 
 
 	clock_t begin = clock();
 
@@ -309,7 +302,7 @@ uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, doubl
 	width=(uint16_t)floor((double)(num_seeds/(double)NUM_THREADS));
 	pthread_t tid[NUM_THREADS];			
 	pass_to_thread_type_1* data= (pass_to_thread_type_1*)malloc(NUM_THREADS*sizeof(pass_to_thread_type_1));	
-	for(i=0;i<NUM_THREADS;i++){		
+	for(uint8_t i=0;i<NUM_THREADS;i++){		
 
 	        (*(data+i))= (pass_to_thread_type_1) {.G_s=G_s,
 			 			      .G_s_next=G_s_next,
@@ -328,15 +321,14 @@ uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, doubl
 	}
 
 	//Spawn threads and start running
-	for(i=0;i<NUM_THREADS;i++){
+	for(uint8_t i=0;i<NUM_THREADS;i++){
 		pthread_create(&tid[i],NULL,my_power_iter,(void*)(data+i));		
 	}
 
 	//Wait for all threads to finish before continuing	
-	for(i=0;i<NUM_THREADS;i++){pthread_join(tid[i], NULL);}
+	for(uint8_t i=0;i<NUM_THREADS;i++){pthread_join(tid[i], NULL);}
 
 	//Free copies and temporary arrays
-
 	csr_destroy(graph_scaled);
 	csr_array_destroy(graph_copies,(uint8_t)NUM_THREADS);
 	free(G_s_next);
@@ -352,9 +344,7 @@ void* my_power_iter(void* param){
 
 	pass_to_thread_type_1* data = param;
 
-	uint16_t j,iter=0;
-	uint64_t i=0;
-	uint8_t flag=0;
+
 	uint64_t* seeds=data->seeds;
 	double* G_s=data->G_s;
 	double* G_s_next= data->G_s_next;
@@ -362,24 +352,30 @@ void* my_power_iter(void* param){
 
 	//Iterate using this "back and forth method" to minimize memory access
 	clock_t begin = clock();
+
+	uint16_t iter=0;
+	uint8_t flag=0;	
+	
 	do{
 		// printf("Iter: %ld\n", i);
 		iter++;	
 		flag=(flag==1) ? 0 : 1 ;
 		if(flag==1){
 			my_CSR_matmat( G_s_next , G_s  , graph , data->M , data->from, data->to);
-			for(j=data->from;j<data->to;j++){ G_s_next[data->M*seeds[j] +j]+=data->tel_prob; }
+			for(uint16_t j=data->from;j<data->to;j++) G_s_next[data->M*seeds[j] +j]+=data->tel_prob; 
 		}
 		else{
 			my_CSR_matmat( G_s, G_s_next  , graph , data->M, data->from, data->to);
-			for(j=data->from;j<data->to;j++){ G_s[data->M*seeds[j] +j]+= data->tel_prob; }
+			for(uint16_t j=data->from;j<data->to;j++) G_s[data->M*seeds[j] +j]+= data->tel_prob; 
 		}
-		i++;
 		//printf("%lf\n",max_norm_of_difference(*(x_temp+1),*x_temp,length));
-	}while(i<MAXIT && max_seed_val_difference( G_s, G_s_next , seeds ,data->M, data->from, data->to) >TOL);
+	}while(iter<MAXIT && max_seed_val_difference( G_s, G_s_next , seeds ,data->M, data->from, data->to) >TOL);
 
 	if(flag==1){
-		for(i=0;i<graph.num_nodes;i++){for(j=data->from;j<data->to;j++){G_s[i*data->M + j]=G_s_next[i*data->M + j];}}
+		for(uint64_t i=0;i<graph.num_nodes;i++){
+			for(uint16_t j=data->from;j<data->to;j++)
+				G_s[i*data->M + j]=G_s_next[i*data->M + j];
+		}
 	}
 
 	*(data->iter)=iter;
@@ -399,13 +395,12 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 			   uint16_t* num_per_class, uint16_t walk_length, double tel_prob){
 
 	csr_graph graph_scaled = csr_deep_copy_and_scale(graph,1.0f-tel_prob);
-	uint8_t i;
-	for(i=0;i<num_class;i++){		
-		uint16_t j,k=0;
-		uint64_t n;
+	 
+	for(uint8_t i=0;i<num_class;i++){		
 		uint64_t* local_seeds =(uint64_t*)malloc(num_per_class[i] *sizeof(uint64_t));    		
 
-		for(j=0;j<num_seeds;j++){ 
+		uint16_t k = 0;
+		for(uint16_t j=0;j<num_seeds;j++){ 
 			if( class_ind[i*num_seeds + j] ==1 )			
 				local_seeds[k++] = seed_indices[j];
 		}
@@ -413,21 +408,23 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 		//prepare seed vector
 		double* soft = soft_labels + i*graph.num_nodes;
 		double one_over_num_seeds = 1.0f /(double) num_per_class[i] ;
-		for(n=0;n<graph.num_nodes;n++){ soft[n] = 0.0f ;}
-		for(j=0;j<num_per_class[i];j++){soft[local_seeds[j]] = one_over_num_seeds ;}
+		for(uint64_t n=0;n<graph.num_nodes;n++)  soft[n] = 0.0f ;
+		for(uint16_t j=0;j<num_per_class[i];j++) soft[local_seeds[j]] = one_over_num_seeds ;
 
 		//perform random walk with restart
 		uint8_t flag=0;
 		double* soft_next=malloc(graph.num_nodes*sizeof(double));
-		for(j=0;j<walk_length;j++){
+		for(uint16_t j=0;j<walk_length;j++){
 			flag=(flag==1) ? 0 : 1 ;
 			if(flag==1){
 				my_CSR_matvec(soft_next, soft, graph_scaled );
-				for(k=0;k<num_per_class[i] ;k++){ soft_next[local_seeds[k]] += tel_prob*one_over_num_seeds; }
+				for(uint16_t k=0;k<num_per_class[i] ;k++)
+					soft_next[local_seeds[k]] += tel_prob*one_over_num_seeds; 
 			}
 			else{
 				my_CSR_matvec(soft, soft_next, graph_scaled );
-				for(k=0;k<num_per_class[i] ;k++){ soft[local_seeds[k]] += tel_prob*one_over_num_seeds; }
+				for(uint16_t k=0;k<num_per_class[i] ;k++)
+					soft[local_seeds[k]] += tel_prob*one_over_num_seeds; 
 			}
 
 		}
@@ -436,6 +433,7 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 			memcpy(soft, soft_next, graph.num_nodes*sizeof(double));
 		}		
 
+		
 		free(soft_next);
 		free(local_seeds);
 
@@ -446,11 +444,10 @@ void my_PPR_single_thread( double* soft_labels, csr_graph graph, uint16_t num_se
 
 
 //find l_max norm between vecors of known length
-double max_seed_val_difference(double* A, double* B, uint64_t* points , uint16_t num_points, uint16_t from, uint16_t to){
-	uint16_t i;
+double max_seed_val_difference(double* A, double* B, uint64_t* points , uint16_t num_points, uint16_t from, uint16_t to){ 
 	double dif;
 	double max_dif=0.0f;
-	for(i=from;i<to;i++){
+	for(uint16_t i=from;i<to;i++){
 		dif=fabs( A[ num_points*points[i] + i] - B[ num_points*points[i] + i] );
 		max_dif = ( dif > max_dif ) ? dif : max_dif ;
 	}
@@ -459,38 +456,38 @@ double max_seed_val_difference(double* A, double* B, uint64_t* points , uint16_t
 
 
 //Extract square submatrix of slice G_l that corresponds to labeled only
-void extract_G_ll(double* G_ll, double* G_s, uint64_t* seeds, uint16_t num_seeds){
-	uint64_t i;
-	uint16_t j;
-	for(i=0;i<num_seeds;i++){for(j=0;j<num_seeds;j++){ G_ll[i*num_seeds + j]=G_s[seeds[i]*num_seeds + j];}}
+void extract_G_ll(double* G_ll, double* G_s, uint64_t* seeds, uint16_t num_seeds){ 
+
+	for(uint64_t i=0;i<num_seeds;i++){
+		for(uint16_t j=0;j<num_seeds;j++)
+			G_ll[i*num_seeds + j]=G_s[seeds[i]*num_seeds + j];
+	}
 }
 
 
 
 //The following two functions generate the coefficients required by the AdaDIF QP
 static double* get_coef_A(uint64_t N, uint16_t K, uint16_t L , uint64_t* d , 
-			  double* P ,double* P_dif , const uint64_t* L_ind , double lambda ){
-	uint64_t i,j;
+			  double* P ,double* P_dif , const uint64_t* L_ind , double lambda ){ 
 	
 	double* A = (double*) malloc(K*K*sizeof(double));
 	
 	double* d_inv_times_lambda = (double*)malloc(N*sizeof(double));
-	for(i=0;i<N;i++){d_inv_times_lambda[i] =lambda/(double)d[i]; } 
+	
+	for(uint64_t i=0;i<N;i++) d_inv_times_lambda[i] =lambda/(double)d[i];  
 	
 	
 	double* P_temp =(double*) malloc(K*N*sizeof(double));
 
-	for(i=0;i<N;i++){ 
-		for(j=0;j<K;j++){
+	for(uint64_t i=0;i<N;i++){ 
+		for(uint16_t j=0;j<K;j++)
 			P_temp[j*N+i]=d_inv_times_lambda[i]*P_dif[j*N+i];			
-		}	
 	}
 	
 	
-	for(i=0;i<L;i++){ 
-		for(j=0;j<K;j++){
-			P_temp[j*N + L_ind[i] ]+= P[j*N+L_ind[i]]/(double)d[L_ind[i]];			
-		}	
+	for(uint16_t i=0;i<L;i++){ 
+		for(uint16_t j=0;j<K;j++)
+			P_temp[j*N + L_ind[i] ]+= P[j*N+L_ind[i]]/(double)d[L_ind[i]];				
 	}	
 	
 	
@@ -502,16 +499,16 @@ static double* get_coef_A(uint64_t N, uint16_t K, uint16_t L , uint64_t* d ,
 }
 
 static double* get_coef_b(uint64_t N, uint16_t K, uint16_t L ,uint16_t num_pos , uint64_t* d , double* P , uint64_t* L_c ){
-	uint16_t i,j;
+
 	double two_over_L = -2.0f/(double) L;
 	
         double*	b = (double*) malloc(K*sizeof(double));
-	for(i=0;i<K;i++){b[i]=0.0f;}
+
+	for(uint16_t i=0;i<K;i++) b[i]=0.0f;
 	
-	for(i=0;i<K;i++){
-		for(j=0;j<num_pos;j++){
+	for(uint16_t i=0;i<K;i++){
+		for(uint16_t j=0;j<num_pos;j++)
 			b[i]+=P[i*N + L_c[j]]/(double)d[L_c[j]];
-		}	
 		b[i]*= two_over_L;
 	}
 	

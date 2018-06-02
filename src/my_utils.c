@@ -27,11 +27,7 @@
 
 void assert_all_nodes_present(csr_graph graph, const uint64_t* seed_indices, uint16_t num_seeds){
 	
-//	printf("Number of nodes %"PRIu64"\n",graph.num_nodes);
-
-	
 	for(uint16_t i=0;i<num_seeds;i++){
-//		printf("Seed %"PRIu64"\n",seed_indices[i]);
 		if(seed_indices[i]>graph.num_nodes){
 			printf("ERROR: Seed node index does not appear in edgelist (probably an isolated node)\n");
 		        exit(EXIT_FAILURE); 		
@@ -72,7 +68,6 @@ void random_sample( uint64_t* seeds, abstract_labels labels, abstract_labels all
 		}while(flag==1);
 		seeds[i]=temp;
 	}
-
 
 	//Draw corresponding labels
 	if(all_labels.multi_label){
@@ -212,8 +207,6 @@ int LUPDecompose(double **A, int N, double Tol, int *P) {
 
 
 
-
-
 //Interface for CBLAS matrix vector product
 void matvec(double*y, double* A, double* x, uint16_t M, uint16_t N ){
 	 	
@@ -257,27 +250,25 @@ void matrix_matrix_product(double*C, double* A, double* B, uint64_t m, uint16_t 
 //Project vector onto simplex by alternating projections onto line and positive quadrant
 //Operation happens in place
 void project_to_simplex( double* x, uint16_t N ){
-	double sum,a;
-	uint16_t i;
+	double sum,a; 
 	uint8_t flag;
 
 	do{
 		flag=0;
 		sum=0.0f;
-		for(i=0;i<N;i++){sum+=x[i];}
+		
+		for(uint16_t i=0; i<N; i++) sum+=x[i];
 
 		a=(sum - 1.0f)/(double)N;
 
-		for(i=0;i<N;i++){
+		for(uint16_t i=0; i<N; i++){
 			x[i]-=a;
 			if(x[i]<= - PROJ_TOL){
-//				printf(" OUT OF QUADRANT \n");
 				x[i]=0.0f;
 				flag=1;}
 		}
 
 	}while(flag==1);
-
 }
 
 
@@ -298,7 +289,7 @@ void print_array_1D(double* arr, uint64_t N, uint64_t M){
 	printf("Array: \n");
 	for(i=0;i<N;i++){
 		printf("\n");
-		for(j=0;j<M;j++){printf("%lf  ",arr[i*M + j]);}
+		for(j=0;j<M;j++) printf("%lf  ",arr[i*M + j]);
 	}
 	printf("\n");
 }
@@ -306,13 +297,12 @@ void print_array_1D(double* arr, uint64_t N, uint64_t M){
 //Pradict labels from largest soft label
 void predict_labels( int8_t* label_out, double* soft_labels, int8_t* class,
 	             uint64_t graph_size, uint8_t num_class ){
-	uint64_t i;
-	uint8_t j,max_ind;
+	uint8_t max_ind;
 	double max_val;
 
-	for(i=0;i<graph_size;i++){
+	for(uint64_t i=0;i<graph_size;i++){
 		max_val=-100.0f;
-		for(j=0;j<num_class;j++){  
+		for(uint8_t j=0;j<num_class;j++){  
 			if(max_val<soft_labels[i*num_class + j]){
 				max_val=soft_labels[i*num_class + j];
 				max_ind=j;}
@@ -324,13 +314,13 @@ void predict_labels( int8_t* label_out, double* soft_labels, int8_t* class,
 //Pradict labels from largest soft label (Soft labels are transposed array)
 void predict_labels_type2( int8_t* label_out, double* soft_labels, int8_t* class,
 			   uint64_t graph_size, uint8_t num_class ){
-	uint64_t j;
-	uint8_t i,max_ind;
+			   				   
+	uint8_t max_ind;
 	double max_val;
 
-	for(j=0;j<graph_size;j++){
+	for(uint64_t j=0;j<graph_size;j++){
 		max_val=-100.0f;
-		for(i=0;i<num_class;i++){  
+		for(uint8_t i=0;i<num_class;i++){  
 			if(max_val<soft_labels[i*graph_size + j]){
 				max_val=soft_labels[i*graph_size + j];
 				max_ind=i;}	
@@ -341,22 +331,18 @@ void predict_labels_type2( int8_t* label_out, double* soft_labels, int8_t* class
 
 //Print the two collumn array of edges
 void print_edge_list(const uint64_t** edge_list, uint64_t len){
-	uint64_t i;
 	printf("EDGE LIST: \n");
-	for(i=0;i<len;i++){
+	for(uint64_t i=0;i<len;i++)
 		printf("%"PRIu64"  %"PRIu64"\n",edge_list[i][0],edge_list[i][1]);
-	}
 }
 
 
 
 
 //Print array (double)
-void print_predictions(int8_t* arr, uint64_t N){
-	uint64_t i;
+void print_predictions(int8_t* arr, uint64_t N){ 
 	printf("Predicted labels: \n");
-	for(i=0;i<N;i++){printf("%"PRId8"\n",arr[i]);}
-
+	for(uint64_t i=0;i<N;i++) printf("%"PRId8"\n",arr[i]);
 }
 
 //Check if file is valid
@@ -373,7 +359,7 @@ int file_isreg(char *path) {
 
 //Elementwise subtract b from a and store in c 
 void my_array_sub(double* c, double* a, double* b, uint64_t N ){	
-	for(uint64_t i=0;i<N;i++){ c[i] = a[i] -b[i]; }
+	for(uint64_t i=0;i<N;i++) c[i] = a[i] -b[i]; 
 }
 
 //Max of array 
@@ -613,9 +599,8 @@ uint64_t** zip_arrays(uint64_t* A, uint64_t* B, uint64_t len){
 
 //Unzip two arrays into input pointers and destroy zipped array
 void unzip_array(uint64_t** zipped, uint64_t* unzip_1, uint64_t* unzip_2, uint64_t len ){
-	uint64_t i;
-	
-	for(i=0;i<len;i++){
+		
+	for(uint64_t i=0;i<len;i++){
 		unzip_1[i] = zipped[i][0];
 		unzip_2[i] = zipped[i][1];
 		free(*(zipped+i));
@@ -684,11 +669,9 @@ uint64_t* remove_from_list(const uint64_t* list, const uint64_t* indexes_to_be_r
 
 	uint64_t* new_list = (uint64_t*) malloc((len-num_removed)*sizeof(uint64_t));
 
-	
 	int mask[len];
 	
 	memset(mask, 0, len*sizeof(int));
-
 	
 	for(uint64_t i =0; i<num_removed; i++){ mask[indexes_to_be_removed[i]] =1 ;}
 
@@ -750,7 +733,6 @@ one_hot_mat list_to_one_hot( uint64_t* ind , int8_t* labels, uint8_t num_class ,
 	
 	one_hot_mat one_hot = init_one_hot( num_class , length);
 	
-	
 	for(uint64_t i=0;i<label_count;i++){ 
 		for(uint8_t j=0;j<num_class;j++){ 
 			if( labels[i] == class[j] ){
@@ -783,7 +765,7 @@ one_hot_mat init_one_hot(uint8_t num_class ,uint64_t length){
 
 // Destroy (free) one_hot matrix
 void destroy_one_hot(one_hot_mat one_hot){
-	for(uint8_t i=0;i<one_hot.num_class;i++){ free(one_hot.bin[i]); }
+	for(uint8_t i=0;i<one_hot.num_class;i++) free(one_hot.bin[i]); 
 	free(one_hot.bin);
 }
 

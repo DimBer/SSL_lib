@@ -102,7 +102,7 @@ int SSL_predict(cmd_args args){
 	save_predictions(args.outfile, label_out, graph_size, num_class);
 	
 	//free buffers
-	for(uint64_t i=0;i<edge_count;i++){free(edge_list[i]);}
+	for(uint64_t i=0;i<edge_count;i++) free(edge_list[i]);
 	free(edge_list);
 	free(seeds);
         if(args.multi_label){
@@ -152,11 +152,12 @@ int SSL_test(cmd_args args)
 		all_labels.mclass = read_labels(args.label_filename, &label_count);  // All true labels in list form 
                 label_in.mclass = (int8_t*) malloc(args.num_seeds*sizeof(int8_t));	
 	}
+	
 
 	//RUN EXPERIMENTS
 	uint64_t* seeds=malloc(args.num_seeds*sizeof(uint64_t));
 	uint64_t default_ind[label_count];
-	for(uint64_t i=0;i<label_count;i++){ default_ind[i]=i;}		
+	for(uint64_t i=0;i<label_count;i++) default_ind[i]=i;
 
  	srand(time(NULL)); //seed the random number generator
 
@@ -224,7 +225,7 @@ int SSL_test(cmd_args args)
 	printf(" Mean F1 micro: %lf\n Mean F1 macro: %lf\n ", average_micro_f1, average_macro_f1 );
 
 	//free buffers
-	for(uint64_t i=0;i<edge_count;i++){free(edge_list[i]);}
+	for(uint64_t i=0;i<edge_count;i++) free(edge_list[i]);
 	free(edge_list);
 	free(seeds);
         if(args.multi_label){

@@ -161,14 +161,14 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 // Take array of labels and return number of classes, list of classes and indicator vectors
 uint8_t handle_labels(const int8_t* labels, uint16_t L, int8_t* class,
 		      uint8_t* class_ind , uint16_t* num_per_class ){
-	uint16_t i,j;
+		      	   
 	uint8_t count;
 
 	count= find_unique(class, labels, L);
 
-	for(i=0;i<count;i++){
+	for(uint16_t i=0;i<count;i++){
 		num_per_class[i]=0;
-		for(j=0;j<L;j++){
+		for(uint16_t j=0;j<L;j++){
 			if(labels[j]==class[i]){
 				class_ind[i*L +j] = 1; 
 				num_per_class[i]+=1;

@@ -29,6 +29,7 @@
 #include <time.h>
 #include <inttypes.h>
 
+#include "Tuned_RwR.h"
 #include "csr_handling.h"
 #include "comp_engine.h"
 #include "parameter_opt.h"
@@ -37,17 +38,21 @@
 #include "my_utils.h"
 
 
-uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list, uint64_t num_edges,
+uint64_t Tuned_RwR( abstract_label_output* label_out , const uint64_t** edge_list, uint64_t num_edges,
 		    const uint64_t* seed_indices, abstract_labels labels , cmd_args args){
 	
 	uint16_t num_seeds = args.num_seeds;
 	double tel_prob = args.tel_prob;
 	double lambda = args.lambda_trwr;	
-	uint64_t i;
 	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));
 
+	printf("num seeds %"PRIu16" \n",args.num_seeds);
+	printf("lambda %lf \n",args.lambda_trwr);
+	printf("tel_prob %lf \n",args.tel_prob);
 
-	for(i=0;i<num_seeds;i++){seeds[i]=seed_indices[i]-1;}
+
+	for(uint16_t i=0;i<num_seeds;i++) seeds[i] = seed_indices[i]-1;
+	
 
 	//Create CSR graph from edgelist 
 
@@ -95,16 +100,16 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 
 	matrix_matrix_product(soft_labels, G_s, theta, graph.num_nodes, num_seeds, num_class);
 
-
+	//prepare label output
 	if(labels.multi_label){
-		label_out.mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
+		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		for(uint8_t i=0;i<num_class;i++){
 			for(uint64_t j=0;j<graph.num_nodes;j++)
-				label_out.mlabel[i*graph.num_nodes + j] = soft_labels[j*num_class +i ];
+				label_out->mlabel[i*graph.num_nodes + j] = soft_labels[j*num_class +i ];
 		}
 	}else{
-		label_out.mclass = (int8_t*) malloc(graph.num_nodes*sizeof(int8_t));		
-		predict_labels(label_out.mclass, soft_labels, class , graph.num_nodes, num_class );		
+		label_out->mclass = (int8_t*) malloc(graph.num_nodes*sizeof(int8_t));		
+		predict_labels(label_out->mclass, soft_labels, class , graph.num_nodes, num_class );		
 	}
 
 
@@ -123,9 +128,8 @@ uint64_t Tuned_RwR( abstract_label_output label_out , const uint64_t** edge_list
 
         #if DEBUG
 	double sum=0.0f;
-	for(i=0;i<graph.num_nodes;i++){
-		int j=0;
-		for(;j<num_class;j++){
+	for(uint64_t i=0;i<graph.num_nodes;i++){
+		for(int j=0;j<num_class;j++){
 			printf("%lf  ",soft_labels[i*num_class + j]);
 			sum+=soft_labels[i*num_class + j];
 		}		
