@@ -17,6 +17,7 @@
 #include <math.h>
 #include <time.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include "csr_handling.h"
 #include "my_defs.h"

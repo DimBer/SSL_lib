@@ -1,6 +1,8 @@
 #ifndef my_IO_H_   
 #define my_IO_H_
 
+#include <stdbool.h>
+
 #include "my_defs.h"
 
 

@@ -21,6 +21,7 @@
 #include <inttypes.h>
 #include <getopt.h>
 #include <sys/stat.h>
+#include <stdbool.h>
 
 #include "my_IO.h"
 #include "my_defs.h"
@@ -42,7 +43,7 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 			      .num_iters   = DEFAULT_ITERS,
 			      .num_seeds   = DEFAULT_NUM_SEEDS,
 			      .tel_prob    = DEFAULT_TEL_PROB,	
-			      .multi_label = DEFAULT_MULTILABEL,	 
+			      .is_multilabel = DEFAULT_MULTILABEL,	 
 			      .no_constr = DEFAULT_UNCONSTRAINED,
 			      .graph_filename = DEFAULT_GRAPH,
 			      .label_filename = DEFAULT_LABEL,
@@ -140,11 +141,11 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 				   	exit(EXIT_FAILURE); 
 				   	}
 				   break;				   	   
-			case 'j' : args->no_constr = 1;
+			case 'j' : args->no_constr = true;
 				   break;		
-			case 'k' : args->multi_label = 1;
+			case 'k' : args->is_multilabel = true;
 				   break;	
-   			case 'l' : args->single_thread = 1;
+   			case 'l' : args->single_thread = true;
 				   break;			
 			case 'm' : args->mode = optarg;
 				   break;
@@ -185,7 +186,7 @@ uint8_t abstract_handle_labels( uint16_t** num_per_class, uint8_t** class_ind, i
 
         uint8_t num_class;
 
-	if(labels.multi_label){
+	if(labels.is_multilabel){
 		if(num_seeds!=labels.mlabel.length){ 
 			printf("Something wrong...size of input one_hot_mat != number of seeds\n");
 			exit(EXIT_FAILURE); 

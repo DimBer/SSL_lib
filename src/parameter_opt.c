@@ -17,6 +17,7 @@
 #include <math.h>
 #include <time.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include "parameter_opt.h"
 #include "my_defs.h"

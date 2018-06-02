@@ -19,6 +19,7 @@
 #include <inttypes.h>
 #include <cblas.h>
 #include <sys/stat.h>
+#include <stdbool.h>
 
 #include "my_utils.h"
 #include "my_defs.h"
@@ -70,7 +71,7 @@ void random_sample( uint64_t* seeds, abstract_labels labels, abstract_labels all
 	}
 
 	//Draw corresponding labels
-	if(all_labels.multi_label){
+	if(all_labels.is_multilabel){
 		for(uint16_t i=0;i<num_seeds;i++){
 			for(uint8_t j=0; j<all_labels.mlabel.num_class;j++) labels.mlabel.bin[j][i] = all_labels.mlabel.bin[j][seeds[i]];
 		}		
@@ -468,11 +469,11 @@ uint64_t* read_seed_file( char* filename, uint16_t* num_seeds, uint8_t* num_clas
 	label_buffer = realloc(label_buffer,sizeof(int8_t)*count);
 	index_buffer = realloc(index_buffer,sizeof(uint64_t)*count);
 	
-	//prepare input labels and seeds for multi_label or multi_class
+	//prepare input labels and seeds for is_multilabel or multi_class
 	
 	uint64_t* seed_indices;
 	
-	if(label_in->multi_label){		
+	if(label_in->is_multilabel){		
 		*num_class = max_u8( (uint8_t*) label_buffer, count);		
 		my_relative_sorting( index_buffer, label_buffer, count );
 		seed_indices = find_unique_from_sorted( index_buffer, count , num_seeds );
@@ -503,7 +504,7 @@ void save_predictions(char* filename, abstract_label_output label_out, uint64_t 
 	
 	if(!file) printf("ERROR: Cannot open outfile");
 	
-	if(label_out.multi_label){ 
+	if(label_out.is_multilabel){ 
 		val_and_ind line_of_out[num_class];
 		for(uint64_t i=0; i<len; i++){
 			for(uint8_t j=0; j<num_class; j++) line_of_out[j] = (val_and_ind) {.val = label_out.mlabel[j*len + i], .ind=(int)j}; 

@@ -1,7 +1,6 @@
 #ifndef CSR_HANDLING_H_   
 #define CSR_HANDLING_H_
 
-
 #include "my_defs.h"
 
 uint64_t edge_list_to_csr(const uint64_t** , double* , uint64_t* , uint64_t* , uint64_t , uint64_t*, uint64_t* );

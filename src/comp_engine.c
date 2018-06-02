@@ -20,6 +20,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 #include <sys/sysinfo.h>
+#include <stdbool.h>
 
 #include "comp_engine.h"
 #include "csr_handling.h"
@@ -36,7 +37,7 @@ static double* get_coef_b(uint64_t , uint16_t , uint16_t ,uint16_t , uint64_t* ,
 //Multi-threaded AdaDIF method (output is soft labels)
 void AdaDIF_core_multi_thread( double* soft_labels, csr_graph graph, uint16_t num_seeds, 
 			       const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
-			       uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr, uint8_t single_thread){
+			       uint16_t* num_per_class, uint16_t walk_length, double lambda, bool no_constr, bool single_thread){
 
 	uint8_t NUM_THREADS, width;
 
@@ -131,7 +132,7 @@ void* AdaDIF_squezze_to_one_thread( void* param){
 //Core of AdaDIF method that runs on single thread (output is soft labels)
 void AdaDIF_core( double* soft_labels, csr_graph graph, uint16_t num_seeds,
 		  const uint64_t* seed_indices, uint8_t num_class, uint8_t* class_ind,
-		  uint16_t* num_per_class, uint16_t walk_length, double lambda, int8_t no_constr){       
+		  uint16_t* num_per_class, uint16_t walk_length, double lambda, bool no_constr){       
 		  
 	printf("Number of local classes%"PRIu8": \n",num_class); 
 	
@@ -214,7 +215,7 @@ void perform_random_walk(double* land_prob, double* dif_land_prob, csr_graph gra
 double* get_AdaDIF_parameters( uint64_t N, uint64_t* degrees, double* land_prob, 
 			       double* dif_land_prob, const uint64_t* seed_indices,
 			       uint64_t* local_seeds, uint8_t* class_ind, uint16_t walk_length,
-			        uint16_t num_seeds, uint16_t num_pos,double lambda,int8_t no_constr){
+			        uint16_t num_seeds, uint16_t num_pos,double lambda, bool no_constr){
 	
 	double* theta = (double*) malloc(walk_length*sizeof(double));
 
@@ -263,7 +264,7 @@ static uint8_t get_threads_and_width(uint8_t* width ,uint8_t num_class){
 //Obtain slice of G  as stationary distributions. (Unweighted) Seed set must be defined 
 //Returns numbr of itrations untill convergence
 uint16_t get_slice_of_G( double* G_s, uint64_t* seeds, uint16_t num_seeds, double tel_prob, 
-			 csr_graph graph, uint8_t single_thread ){
+			 csr_graph graph, bool single_thread ){
 
 	//Do it SMART: Use a temporary G_s_next where you store the left hand side of iteration
 	//Then at eah iteration just flip pointers between G_s and G_s_next

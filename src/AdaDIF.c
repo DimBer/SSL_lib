@@ -29,6 +29,7 @@
 #include <math.h>
 #include <time.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include "AdaDIF.h"
 #include "csr_handling.h"
@@ -85,7 +86,7 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
         			   num_per_class, walk_length, lambda, no_constr, args.single_thread);
         
         //prepare label output	
-	if(labels.multi_label){
+	if(labels.is_multilabel){
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
 	}else{
@@ -175,7 +176,7 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
         		      class_ind, num_per_class, walk_length, tel_prob);
         
 	//prepare label output
-	if(labels.multi_label){
+	if(labels.is_multilabel){
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
 	}else{

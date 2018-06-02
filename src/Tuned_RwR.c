@@ -28,6 +28,7 @@
 #include <math.h>
 #include <time.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include "Tuned_RwR.h"
 #include "csr_handling.h"
@@ -101,7 +102,7 @@ uint64_t Tuned_RwR( abstract_label_output* label_out , const uint64_t** edge_lis
 	matrix_matrix_product(soft_labels, G_s, theta, graph.num_nodes, num_seeds, num_class);
 
 	//prepare label output
-	if(labels.multi_label){
+	if(labels.is_multilabel){
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		for(uint8_t i=0;i<num_class;i++){
 			for(uint64_t j=0;j<graph.num_nodes;j++)

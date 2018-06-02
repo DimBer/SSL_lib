@@ -1,14 +1,15 @@
 #ifndef MY_DEFS_H_   
 #define MY_DEFS_H_
 
-#define DEBUG 0
-#define PRINT_THETAS 0
+#include <stdbool.h>
+
+#define DEBUG false
+#define PRINT_THETAS false
 
 //Input buffer sizes
 
 #define EDGE_BUFF_SIZE 5000000
 #define CLASS_BUFF_SIZE 5000000
-
 
 //Default command line arguments
 
@@ -26,9 +27,9 @@
 
 #define DEFAULT_NUM_SEEDS 100
 
-#define DEFAULT_UNCONSTRAINED 0
+#define DEFAULT_UNCONSTRAINED false
 
-#define DEFAULT_MULTILABEL 0
+#define DEFAULT_MULTILABEL false
 
 #define DEFAULT_GRAPH "graphs/pubmed_adj.txt"
 
@@ -40,7 +41,7 @@
 
 #define DEFAULT_METHOD_IND 1
 
-#define DEFAULT_SINGLE_THREAD 0
+#define DEFAULT_SINGLE_THREAD false
 
 #define DEFAULT_MODE "test"
 
@@ -50,7 +51,6 @@
 #define TOL 1.0e-8
 
 //Default optimization parameters
-
 
 #define GD_TOL 1.0e-3
 
@@ -67,7 +67,6 @@
 #define LU_TOL 1.0e-6
 
 #define L2_REG_LAMBDA 0.05
-
 
 //DATA STRUCTURES
 
@@ -108,14 +107,14 @@ typedef struct{
 // Abstract label formats (list or one-hot-matrix)
 
 typedef struct{	
-	uint8_t multi_label; 
+	bool is_multilabel; 
 	int8_t* mclass;	
 	one_hot_mat mlabel;
 } abstract_labels;
 
 
 typedef struct{	
-	uint8_t multi_label;
+	bool is_multilabel;
 	int8_t* mclass;	
 	double* mlabel;		
 } abstract_label_output;
@@ -142,9 +141,9 @@ typedef struct{
 	char* outfile;
 	uint16_t walk_length;
 	uint8_t method_index;
-	uint8_t no_constr;
-	uint8_t multi_label;
-	uint8_t single_thread;	
+	bool no_constr;
+	bool is_multilabel;
+	bool single_thread;	
 } cmd_args; 
 
 
@@ -190,7 +189,7 @@ typedef struct {
 	const uint64_t* seeds;	
 	uint16_t walk_length;
 	double lambda;
-	int8_t no_constr;
+	bool no_constr;
 }pass_to_thread_type_2;
 
 

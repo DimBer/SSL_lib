@@ -16,6 +16,7 @@
 #include <math.h>
 #include <time.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include "Tuned_RwR.h"
 #include "AdaDIF.h"
@@ -71,7 +72,7 @@ int SSL_predict(cmd_args args){
 	//Parse labels
 	printf("Reading seed file...\n");
 	abstract_labels label_in;
-	label_in.multi_label=args.multi_label;
+	label_in.is_multilabel=args.is_multilabel;
 	uint64_t* seeds;
 	uint8_t num_class;
 	seeds = read_seed_file( args.label_filename, &args.num_seeds, &num_class, &label_in );		
@@ -80,7 +81,7 @@ int SSL_predict(cmd_args args){
 	//Call method		
 	uint64_t graph_size;
 	abstract_label_output label_out;	
-	label_out.multi_label=args.multi_label;	
+	label_out.is_multilabel=args.is_multilabel;	
 	if(args.method_index==0){
 		printf("Executing Tunded_RwR...\n");
 		graph_size=Tuned_RwR( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds, 
@@ -105,7 +106,7 @@ int SSL_predict(cmd_args args){
 	for(uint64_t i=0;i<edge_count;i++) free(edge_list[i]);
 	free(edge_list);
 	free(seeds);
-        if(args.multi_label){
+        if(args.is_multilabel){
         	destroy_one_hot(label_in.mlabel);
         	free(label_out.mlabel);
         }else{
@@ -137,14 +138,14 @@ int SSL_test(cmd_args args)
 	abstract_labels all_labels;
 	abstract_label_output label_out;
 	
-	label_in.multi_label=args.multi_label;
-	label_out.multi_label=args.multi_label;
-	all_labels.multi_label=args.multi_label;
+	label_in.is_multilabel=args.is_multilabel;
+	label_out.is_multilabel=args.is_multilabel;
+	all_labels.is_multilabel=args.is_multilabel;
 	
 	uint64_t label_count;
 	uint8_t* num_labels_per_node;
 	
-	if(args.multi_label){
+	if(args.is_multilabel){
 		all_labels.mlabel = read_one_hot_mat(args.label_filename, &label_count); // All true labels in one-hot-matrix form 
 		label_in.mlabel = init_one_hot( all_labels.mlabel.num_class , (uint64_t) args.num_seeds); 
 		num_labels_per_node = return_num_labels_per_node( all_labels.mlabel );
@@ -197,7 +198,7 @@ int SSL_test(cmd_args args)
 
 		one_hot_mat true_one_hot,pred_one_hot;
 
-		if(args.multi_label){	
+		if(args.is_multilabel){	
 			pred_one_hot = top_k_mlabel( label_out.mlabel , num_labels_per_node, graph_size, label_in.mlabel.num_class);
 			true_one_hot = all_labels.mlabel;
 		}else{
@@ -214,7 +215,7 @@ int SSL_test(cmd_args args)
 
 		//free temporary arrays
 		destroy_one_hot(pred_one_hot);
-		if(args.multi_label==0) destroy_one_hot(true_one_hot);
+		if(args.is_multilabel==0) destroy_one_hot(true_one_hot);
 		free(unlabeled);
 	}
 
@@ -228,7 +229,7 @@ int SSL_test(cmd_args args)
 	for(uint64_t i=0;i<edge_count;i++) free(edge_list[i]);
 	free(edge_list);
 	free(seeds);
-        if(args.multi_label){
+        if(args.is_multilabel){
         	destroy_one_hot(label_in.mlabel);
         	destroy_one_hot(all_labels.mlabel);
         	free(label_out.mlabel);

@@ -1,6 +1,7 @@
 #ifndef MY_UTILS_H_   
 #define MY_UTILS_H_
 
+#include <stdbool.h>
 
 #include "my_defs.h"
 
