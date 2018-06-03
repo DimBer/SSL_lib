@@ -356,7 +356,6 @@ void* my_power_iter(void* param){
 	sz_short flag=0;	
 	
 	do{
-		// printf("Iter: %ld\n", i);
 		iter++;	
 		flag=(flag==1) ? 0 : 1 ;
 		if(flag==1){
@@ -367,7 +366,6 @@ void* my_power_iter(void* param){
 			my_CSR_matmat( G_s, G_s_next  , graph , data->M, data->from, data->to);
 			for(sz_med j=data->from;j<data->to;j++) G_s[data->M*seeds[j] +j]+= data->tel_prob; 
 		}
-		//printf("%lf\n",max_norm_of_difference(*(x_temp+1),*x_temp,length));
 	}while(iter<MAXIT && max_seed_val_difference( G_s, G_s_next , seeds ,data->M, data->from, data->to) >TOL);
 
 	if(flag==1){
