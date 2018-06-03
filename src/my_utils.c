@@ -73,7 +73,8 @@ void random_sample( sz_long* seeds, abstract_labels labels, abstract_labels all_
 	//Draw corresponding labels
 	if(all_labels.is_multilabel){
 		for(sz_med i=0;i<num_seeds;i++){
-			for(sz_short j=0; j<all_labels.mlabel.num_class;j++) labels.mlabel.bin[j][i] = all_labels.mlabel.bin[j][seeds[i]];
+			for(sz_short j=0; j<all_labels.mlabel.num_class;j++) 
+				labels.mlabel.bin[j][i] = all_labels.mlabel.bin[j][seeds[i]];
 		}		
 	}else{
 		
@@ -243,7 +244,8 @@ void matvec_trans_long( double* y , double* A, double* x, sz_long N, sz_med p ){
 //Interface for CBLAS mutrix matrix product
 void matrix_matrix_product(double*C, double* A, double* B, sz_long m, sz_med k , sz_short n){
 
-	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, (int)m, (int)n, (int)k, 1.0f, A, (int)k, B, (int)n, 0.0f, C, (int)n);
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, (int)m, 
+		     (int)n, (int)k, 1.0f, A, (int)k, B, (int)n, 0.0f, C, (int)n);
 
 }
 
@@ -507,18 +509,21 @@ void save_predictions(char* filename, abstract_label_output label_out, sz_long l
 	if(label_out.is_multilabel){ 
 		val_and_ind line_of_out[num_class];
 		for(sz_long i=0; i<len; i++){
-			for(sz_short j=0; j<num_class; j++) line_of_out[j] = (val_and_ind) {.val = label_out.mlabel[j*len + i], .ind=(int)j}; 
+			for(sz_short j=0; j<num_class; j++) 
+				line_of_out[j] = (val_and_ind) {.val = label_out.mlabel[j*len + i], .ind=(int)j}; 
 				
 			qsort( line_of_out, num_class, sizeof(line_of_out[0]), compare2);
 			
 			fprintf(file, "%"SCNu64":\t", (uint64_t) i+1 );
 			
-			for(sz_short j=0; j<num_class; j++) fprintf(file, "%"PRIu16" ", (uint16_t) line_of_out[j].ind +1 );
+			for(sz_short j=0; j<num_class; j++) 
+				fprintf(file, "%"PRIu16" ", (uint16_t) line_of_out[j].ind +1 );
 			
 			fprintf(file, "\n");
 		}
 	}else{
-		for(sz_long i=0; i<len; i++) fprintf(file, "%"SCNu64"\t%"SCNd16"\n", (uint64_t) i+1 , (int16_t) label_out.mclass[i]);	
+		for(sz_long i=0; i<len; i++)
+			fprintf(file, "%"SCNu64"\t%"SCNd16"\n", (uint64_t) i+1 , (int16_t) label_out.mclass[i]);	
 	}
 	
 	fclose(file);
@@ -728,7 +733,8 @@ sz_long* find_unique_from_sorted( sz_long* sorted_buffer, sz_long len , sz_med* 
 // Converts list to one hot binary matrix of one_hot_mat type
 // Label count is number of indexes with known labels
 // label_count<=length
-//If label_count<=length, then rows of the one_hot matrix without a coresponding labeled index will be [0...0]
+// If label_count<=length, then rows of the one_hot matrix 
+// without a coresponding labeled index will be [0...0]
 one_hot_mat list_to_one_hot( sz_long* ind , class_t* labels, sz_short num_class ,
 			     class_t* class ,  sz_long label_count ,sz_long length){
 	
@@ -782,8 +788,10 @@ sz_short* return_num_labels_per_node( one_hot_mat one_hot ){
 }
 
 
-// Return a one_hot_mat with non-zeros for each row given to the k-largest (specified by num_lpn) corresponding soft labels
-// Does not do sorting and has O(kC) complexity per node instead of O(C logC). Will be slow if C and k large
+// Return a one_hot_mat with non-zeros for each row given to 
+// the k-largest (specified by num_lpn) corresponding soft labels
+// Does not do sorting and has O(kC) complexity per node instead 
+// of O(C logC). Will be slow if C and k large
 one_hot_mat top_k_mlabel( double* soft_labels , sz_short* num_lpn, sz_long length, sz_short num_class ){
 	double max_max,max,val;
 	sz_short max_ind;
@@ -906,7 +914,8 @@ void get_per_class_f1_scores(double* f1_per_class, detector_stats* all_stats, sz
 // Inputs must be one_hot structs
 // f1_scores are only evaluated on the indexes denoted by unlabeled
 
-f1_scores get_averaged_f1_scores(one_hot_mat true_labels, one_hot_mat pred_labels, sz_long* unlabeled , sz_long num_unlabeled ){
+f1_scores get_averaged_f1_scores( one_hot_mat true_labels, one_hot_mat pred_labels,
+	                          sz_long* unlabeled , sz_long num_unlabeled ){
 	
 	if( (true_labels.num_class != pred_labels.num_class) || (true_labels.length != pred_labels.length) ){
 		printf("Classifier stats ERROR: One-hot matrixes dimensions dont match\n");
