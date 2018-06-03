@@ -40,17 +40,17 @@
 #include "my_utils.h"
 
 // Adaptive - Diffusions method
-uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, uint64_t num_edges,
-		 const uint64_t* seed_indices, abstract_labels labels , cmd_args args )
+sz_long AdaDIF( abstract_label_output* label_out , const sz_long** edge_list, sz_long num_edges,
+		 const sz_long* seed_indices, abstract_labels labels , cmd_args args )
 {
 		
-	uint16_t num_seeds = args.num_seeds;
-	uint16_t walk_length = args.walk_length;
+	sz_med num_seeds = args.num_seeds;
+	sz_med walk_length = args.walk_length;
 	double lambda = args.lambda_addf;
-	uint8_t no_constr = args.no_constr;	
+	sz_short no_constr = args.no_constr;	
 
-	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));	
-	for(uint16_t i=0;i<num_seeds;i++) seeds[i]=seed_indices[i]-1;
+	sz_long* seeds=malloc(num_seeds*sizeof(sz_long));	
+	for(sz_med i=0;i<num_seeds;i++) seeds[i]=seed_indices[i]-1;
 
         //Create CSR graph from edgelist 
 
@@ -66,10 +66,10 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// HANDLE LABELS
 
-	uint8_t num_class; 
-	uint16_t* num_per_class;
-	uint8_t* class_ind;
-	int8_t* class;
+	sz_short num_class; 
+	sz_med* num_per_class;
+	sz_short* class_ind;
+	class_t* class;
 
 	num_class = abstract_handle_labels( &num_per_class, &class_ind, &class, labels, num_seeds);
 
@@ -90,29 +90,29 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
 	}else{
-		label_out->mclass = (int8_t*) malloc(graph.num_nodes*sizeof(int8_t));
+		label_out->mclass = (class_t*) malloc(graph.num_nodes*sizeof(class_t));
 		predict_labels_type2(label_out->mclass, soft_labels, class, graph.num_nodes, num_class );
 	}
 
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-	printf("Graph size: %"PRIu64"\n", graph.num_nodes);
+	printf("Graph size: %"PRIu64"\n", (uint64_t) graph.num_nodes);
 
-	printf("Num edges: %"PRIu64"\n", graph.nnz);
+	printf("Num edges: %"PRIu64"\n", (uint64_t) graph.nnz);
 
 	printf("Runtime: %lf\n ", time_spent);
 
 	#if DEBUG          
 	double sum=0.0f;
-	for(uint64_t i=0;i<graph.num_nodes;i++){
+	for(sz_long i=0;i<graph.num_nodes;i++){
 		for(int j=0;j<num_class;j++)
 			sum+=soft_labels[j*graph.num_nodes + i];	
 	}
 	printf("Check sum: %lf \n",sum);
   	        
 	printf("\n");
-	for(int j=0;j<num_class;j++) printf("%"PRId8", ",class[j]);
+	for(int j=0;j<num_class;j++) printf("%"PRId8", ",(int8_t) class[j]);
 	printf("\n");
 	#endif		
 	
@@ -132,17 +132,17 @@ uint64_t AdaDIF( abstract_label_output* label_out , const uint64_t** edge_list, 
 
 
 //Personalized Pagerank method
-uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, uint64_t num_edges, 
-		const uint64_t* seed_indices, abstract_labels labels, cmd_args args )
+sz_long my_PPR( abstract_label_output* label_out , const sz_long** edge_list, sz_long num_edges, 
+		const sz_long* seed_indices, abstract_labels labels, cmd_args args )
 {
 	
 	
-	uint16_t num_seeds = args.num_seeds;
-	uint16_t walk_length = args.walk_length;
+	sz_med num_seeds = args.num_seeds;
+	sz_med walk_length = args.walk_length;
 	double tel_prob = args.tel_prob;
 
-	uint64_t* seeds=malloc(num_seeds*sizeof(uint64_t));	
-	for(uint64_t i=0;i<num_seeds;i++) seeds[i]=seed_indices[i]-1;
+	sz_long* seeds=malloc(num_seeds*sizeof(sz_long));	
+	for(sz_long i=0;i<num_seeds;i++) seeds[i]=seed_indices[i]-1;
 
         //Create CSR graph from edgelist 
 
@@ -156,10 +156,10 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	// HANDLE LABELS
 
-	uint8_t num_class; 
-	uint16_t* num_per_class;
-	uint8_t* class_ind;
-	int8_t* class;
+	sz_short num_class; 
+	sz_med* num_per_class;
+	sz_short* class_ind;
+	class_t* class;
 	
 	num_class = abstract_handle_labels(&num_per_class, &class_ind, &class, labels, num_seeds);
 
@@ -180,7 +180,7 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 		label_out->mlabel = (double*) malloc(graph.num_nodes*num_class*sizeof(double));
 		memcpy(label_out->mlabel, soft_labels, graph.num_nodes*num_class*sizeof(double));		
 	}else{
-		label_out->mclass = (int8_t*) malloc(graph.num_nodes*sizeof(int8_t));		
+		label_out->mclass = (class_t*) malloc(graph.num_nodes*sizeof(class_t));		
 		predict_labels_type2(label_out->mclass, soft_labels, class , graph.num_nodes, num_class );
 	}
 
@@ -189,22 +189,22 @@ uint64_t my_PPR( abstract_label_output* label_out , const uint64_t** edge_list, 
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-	printf("Graph size: %"PRIu64"\n", graph.num_nodes);
+	printf("Graph size: %"PRIu64"\n", (uint64_t) graph.num_nodes);
 
-	printf("Num edges: %"PRIu64"\n", graph.nnz);
+	printf("Num edges: %"PRIu64"\n", (uint64_t) graph.nnz);
 
 	printf("Runtime: %lf\n ", time_spent);
 	
 	#if DEBUG          
 	double sum=0.0f;
-	for(uint64_t i=0;i<graph.num_nodes;i++){
+	for(sz_long i=0;i<graph.num_nodes;i++){
 		for(int j=0;j<num_class;j++)
 			sum+=soft_labels[j*graph.num_nodes + i];
 	}
 	printf("Check sum: %lf \n",sum);
   	        
 	printf("\n");
-	for(int j=0;j<num_class;j++) printf("%"PRId8", ",class[j]);
+	for(int j=0;j<num_class;j++) printf("%"PRId8", ",(int8_t) class[j]);
 	printf("\n");
 	#endif	
 	

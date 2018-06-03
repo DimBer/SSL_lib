@@ -160,16 +160,16 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 
 
 // Take array of labels and return number of classes, list of classes and indicator vectors
-uint8_t handle_labels(const int8_t* labels, uint16_t L, int8_t* class,
-		      uint8_t* class_ind , uint16_t* num_per_class ){
+sz_short handle_labels(const class_t* labels, sz_med L, class_t* class,
+		      sz_short* class_ind , sz_med* num_per_class ){
 		      	   
-	uint8_t count;
+	sz_short count;
 
 	count= find_unique(class, labels, L);
 
-	for(uint16_t i=0;i<count;i++){
+	for(sz_med i=0;i<count;i++){
 		num_per_class[i]=0;
-		for(uint16_t j=0;j<L;j++){
+		for(sz_med j=0;j<L;j++){
 			if(labels[j]==class[i]){
 				class_ind[i*L +j] = 1; 
 				num_per_class[i]+=1;
@@ -181,10 +181,10 @@ uint8_t handle_labels(const int8_t* labels, uint16_t L, int8_t* class,
 }
 
 //Take array of labels OR a one-hot-matrix and return number of classes, list of classes and indicator vectors
-uint8_t abstract_handle_labels( uint16_t** num_per_class, uint8_t** class_ind, int8_t** class,
-			        abstract_labels labels, uint16_t num_seeds){
+sz_short abstract_handle_labels( sz_med** num_per_class, sz_short** class_ind, class_t** class,
+			        abstract_labels labels, sz_med num_seeds){
 
-        uint8_t num_class;
+        sz_short num_class;
 
 	if(labels.is_multilabel){
 		if(num_seeds!=labels.mlabel.length){ 
@@ -193,28 +193,28 @@ uint8_t abstract_handle_labels( uint16_t** num_per_class, uint8_t** class_ind, i
 	 	}
 
 		num_class = labels.mlabel.num_class;
-		*num_per_class =  malloc(num_class*sizeof(uint16_t));
-		*class =  malloc(num_class*sizeof(int8_t));
-  		for(uint8_t i=0;i<num_class;i++) *(*class+i)=i; 
-		*class_ind =  malloc(num_class*num_seeds*sizeof(uint8_t));
+		*num_per_class =  malloc(num_class*sizeof(sz_med));
+		*class =  malloc(num_class*sizeof(class_t));
+  		for(sz_short i=0;i<num_class;i++) *(*class+i)=i; 
+		*class_ind =  malloc(num_class*num_seeds*sizeof(sz_short));
 		
-		for(uint8_t i=0;i<num_class;i++){
+		for(sz_short i=0;i<num_class;i++){
 			*(*num_per_class + i)=0;
-			for(uint16_t j=0;j<num_seeds;j++){ 
+			for(sz_med j=0;j<num_seeds;j++){ 
 				*(*num_per_class + i) += labels.mlabel.bin[i][j];
 				*(*class_ind + (i*num_seeds + j)) = labels.mlabel.bin[i][j];
 				}
 		}
 	}else{
-		*num_per_class =  malloc(num_seeds*sizeof(uint16_t));
-		*class_ind =  malloc(num_seeds*num_seeds*sizeof(uint8_t));
-		*class =  malloc(num_seeds*sizeof(int8_t));
+		*num_per_class =  malloc(num_seeds*sizeof(sz_med));
+		*class_ind =  malloc(num_seeds*num_seeds*sizeof(sz_short));
+		*class =  malloc(num_seeds*sizeof(class_t));
 	
 		num_class = handle_labels(labels.mclass, num_seeds, *class, *class_ind, *num_per_class);
 
-		*class = realloc(*class,num_class*sizeof(int8_t));
-		*class_ind = realloc(*class_ind,num_class*num_seeds*sizeof(uint8_t));
-		*num_per_class =realloc(*num_per_class, num_class*sizeof(uint16_t));		
+		*class = realloc(*class,num_class*sizeof(class_t));
+		*class_ind = realloc(*class_ind,num_class*num_seeds*sizeof(sz_short));
+		*num_per_class =realloc(*num_per_class, num_class*sizeof(sz_med));		
 	}
 
 	return num_class;

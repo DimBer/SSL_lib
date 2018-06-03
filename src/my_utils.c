@@ -26,9 +26,9 @@
 
 
 
-void assert_all_nodes_present(csr_graph graph, const uint64_t* seed_indices, uint16_t num_seeds){
+void assert_all_nodes_present(csr_graph graph, const sz_long* seed_indices, sz_med num_seeds){
 	
-	for(uint16_t i=0;i<num_seeds;i++){
+	for(sz_med i=0;i<num_seeds;i++){
 		if(seed_indices[i]>graph.num_nodes){
 			printf("ERROR: Seed node index does not appear in edgelist (probably an isolated node)\n");
 		        exit(EXIT_FAILURE); 		
@@ -38,7 +38,7 @@ void assert_all_nodes_present(csr_graph graph, const uint64_t* seed_indices, uin
 }
 
 
-uint64_t rand_lim(uint64_t limit) {
+sz_long rand_lim(sz_long limit) {
 	/* return a random number between 0 and limit inclusive.
 	 */
 	int divisor = RAND_MAX/((int)limit+1);
@@ -51,18 +51,18 @@ uint64_t rand_lim(uint64_t limit) {
 
 
 //Draw random samples with replacement from 0 to N-1
-void random_sample( uint64_t* seeds, abstract_labels labels, abstract_labels all_labels, uint16_t num_seeds, uint64_t N){
+void random_sample( sz_long* seeds, abstract_labels labels, abstract_labels all_labels, sz_med num_seeds, sz_long N){
 
-	uint64_t temp;
-	uint8_t flag;
+	sz_long temp;
+	sz_short flag;
 	
 	//Draw seed indexes
 	seeds[0]=rand_lim(N-1);
-	for(uint16_t i=1;i<num_seeds;i++){
+	for(sz_med i=1;i<num_seeds;i++){
 		do{
 			temp=rand_lim(N-1);
 			flag=0;
-			for(uint16_t j=0;j<i;j++){
+			for(sz_med j=0;j<i;j++){
 				if(temp==seeds[j])
 					flag=1;
 			}
@@ -72,19 +72,19 @@ void random_sample( uint64_t* seeds, abstract_labels labels, abstract_labels all
 
 	//Draw corresponding labels
 	if(all_labels.is_multilabel){
-		for(uint16_t i=0;i<num_seeds;i++){
-			for(uint8_t j=0; j<all_labels.mlabel.num_class;j++) labels.mlabel.bin[j][i] = all_labels.mlabel.bin[j][seeds[i]];
+		for(sz_med i=0;i<num_seeds;i++){
+			for(sz_short j=0; j<all_labels.mlabel.num_class;j++) labels.mlabel.bin[j][i] = all_labels.mlabel.bin[j][seeds[i]];
 		}		
 	}else{
 		
-		for(uint16_t i=0;i<num_seeds;i++){ 
+		for(sz_med i=0;i<num_seeds;i++){ 
 			labels.mclass[i]=all_labels.mclass[seeds[i]];
 			//printf("%d\n",seeds[i]);
 		}
 	}
 
 	// +1 seed indexes !
-	for(uint16_t i=0;i<num_seeds;i++){seeds[i]+=1;}	
+	for(sz_med i=0;i<num_seeds;i++){seeds[i]+=1;}	
 
 }
 
@@ -93,8 +93,8 @@ void random_sample( uint64_t* seeds, abstract_labels labels, abstract_labels all
 //My comparator for two collumn array. Sorts second col according to first
 int compare ( const void *pa, const void *pb ) 
 {
-	const uint64_t *a = *(const uint64_t **)pa;
-	const uint64_t *b = *(const uint64_t **)pb;
+	const sz_long *a = *(const sz_long **)pa;
+	const sz_long *b = *(const sz_long **)pb;
 	if(a[0] == b[0])
 		return a[1] - b[1];
 	else
@@ -112,10 +112,10 @@ int compare2 ( const void *pa, const void *pb )
 }  
 
 //frobenious norm of double-valued square matrix
-double frob_norm(double* A, uint16_t dim){
+double frob_norm(double* A, sz_med dim){
 	double norm=0.0f;
 
-	for(uint16_t i=0;i<dim*dim;i++){
+	for(sz_med i=0;i<dim*dim;i++){
 		norm+=pow(A[i],2.0f);
 	}
 		
@@ -209,7 +209,7 @@ int LUPDecompose(double **A, int N, double Tol, int *P) {
 
 
 //Interface for CBLAS matrix vector product
-void matvec(double*y, double* A, double* x, uint16_t M, uint16_t N ){
+void matvec(double*y, double* A, double* x, sz_med M, sz_med N ){
 	 	
 	for(int i=0;i<M;i++){y[i]=0.0f;}
 
@@ -222,9 +222,9 @@ void matvec(double*y, double* A, double* x, uint16_t M, uint16_t N ){
 
 
 //Interface for CBLAS matrix vector product
-void matvec_trans(double*y, double* A, double* x, uint16_t M, uint16_t N ){
+void matvec_trans(double*y, double* A, double* x, sz_med M, sz_med N ){
 	 
-	for(uint16_t i=0;i<M;i++){y[i]=0.0f;}
+	for(sz_med i=0;i<M;i++){y[i]=0.0f;}
 
 	cblas_dgemv( CblasRowMajor , CblasTrans , (int)M , (int)N, 1.0f, A, (int)M, x, 1, 0.0f, y, 1);
 
@@ -232,7 +232,7 @@ void matvec_trans(double*y, double* A, double* x, uint16_t M, uint16_t N ){
 }
 
 //Interface for CBLAS trnaspose-matrix vector product
-void matvec_trans_long( double* y , double* A, double* x, uint64_t N, uint16_t p ){		
+void matvec_trans_long( double* y , double* A, double* x, sz_long N, sz_med p ){		
 
 	cblas_dgemv (CblasRowMajor, CblasTrans, (int) p, (int)N , 1.0f, A,  (int) N , x, 1 , 0.0f, y, 1);
 
@@ -241,7 +241,7 @@ void matvec_trans_long( double* y , double* A, double* x, uint64_t N, uint16_t p
 }
 
 //Interface for CBLAS mutrix matrix product
-void matrix_matrix_product(double*C, double* A, double* B, uint64_t m, uint16_t k , uint8_t n){
+void matrix_matrix_product(double*C, double* A, double* B, sz_long m, sz_med k , sz_short n){
 
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, (int)m, (int)n, (int)k, 1.0f, A, (int)k, B, (int)n, 0.0f, C, (int)n);
 
@@ -250,19 +250,19 @@ void matrix_matrix_product(double*C, double* A, double* B, uint64_t m, uint16_t 
 
 //Project vector onto simplex by alternating projections onto line and positive quadrant
 //Operation happens in place
-void project_to_simplex( double* x, uint16_t N ){
+void project_to_simplex( double* x, sz_med N ){
 	double sum,a; 
-	uint8_t flag;
+	sz_short flag;
 
 	do{
 		flag=0;
 		sum=0.0f;
 		
-		for(uint16_t i=0; i<N; i++) sum+=x[i];
+		for(sz_med i=0; i<N; i++) sum+=x[i];
 
 		a=(sum - 1.0f)/(double)N;
 
-		for(uint16_t i=0; i<N; i++){
+		for(sz_med i=0; i<N; i++){
 			x[i]-=a;
 			if(x[i]<= - PROJ_TOL){
 				x[i]=0.0f;
@@ -274,10 +274,10 @@ void project_to_simplex( double* x, uint16_t N ){
 
 
 //find l_max norm between vecors of known length
-double max_diff(double* x, double* y , uint16_t L){ 
+double max_diff(double* x, double* y , sz_med L){ 
 	double dif;
 	double max_dif=0.0f;
-	for(uint16_t i=0;i<L;i++){
+	for(sz_med i=0;i<L;i++){
 		dif=fabs( x[i] - y[i] );
 		max_dif = ( dif > max_dif ) ? dif : max_dif ;
 	}
@@ -285,8 +285,8 @@ double max_diff(double* x, double* y , uint16_t L){
 }
 
 //Print array (double)
-void print_array_1D(double* arr, uint64_t N, uint64_t M){
-	uint64_t i,j;
+void print_array_1D(double* arr, sz_long N, sz_long M){
+	sz_long i,j;
 	printf("Array: \n");
 	for(i=0;i<N;i++){
 		printf("\n");
@@ -296,14 +296,14 @@ void print_array_1D(double* arr, uint64_t N, uint64_t M){
 }
 
 //Pradict labels from largest soft label
-void predict_labels( int8_t* label_out, double* soft_labels, int8_t* class,
-	             uint64_t graph_size, uint8_t num_class ){
-	uint8_t max_ind;
+void predict_labels( class_t* label_out, double* soft_labels, class_t* class,
+	             sz_long graph_size, sz_short num_class ){
+	sz_short max_ind;
 	double max_val;
 
-	for(uint64_t i=0;i<graph_size;i++){
+	for(sz_long i=0;i<graph_size;i++){
 		max_val=-100.0f;
-		for(uint8_t j=0;j<num_class;j++){  
+		for(sz_short j=0;j<num_class;j++){  
 			if(max_val<soft_labels[i*num_class + j]){
 				max_val=soft_labels[i*num_class + j];
 				max_ind=j;}
@@ -313,15 +313,15 @@ void predict_labels( int8_t* label_out, double* soft_labels, int8_t* class,
 }
 
 //Pradict labels from largest soft label (Soft labels are transposed array)
-void predict_labels_type2( int8_t* label_out, double* soft_labels, int8_t* class,
-			   uint64_t graph_size, uint8_t num_class ){
+void predict_labels_type2( class_t* label_out, double* soft_labels, class_t* class,
+			   sz_long graph_size, sz_short num_class ){
 			   				   
-	uint8_t max_ind;
+	sz_short max_ind;
 	double max_val;
 
-	for(uint64_t j=0;j<graph_size;j++){
+	for(sz_long j=0;j<graph_size;j++){
 		max_val=-100.0f;
-		for(uint8_t i=0;i<num_class;i++){  
+		for(sz_short i=0;i<num_class;i++){  
 			if(max_val<soft_labels[i*graph_size + j]){
 				max_val=soft_labels[i*graph_size + j];
 				max_ind=i;}	
@@ -331,19 +331,19 @@ void predict_labels_type2( int8_t* label_out, double* soft_labels, int8_t* class
 }
 
 //Print the two collumn array of edges
-void print_edge_list(const uint64_t** edge_list, uint64_t len){
+void print_edge_list(const sz_long** edge_list, sz_long len){
 	printf("EDGE LIST: \n");
-	for(uint64_t i=0;i<len;i++)
-		printf("%"PRIu64"  %"PRIu64"\n",edge_list[i][0],edge_list[i][1]);
+	for(sz_long i=0;i<len;i++)
+		printf("%"PRIu64"  %"PRIu64"\n", (uint64_t) edge_list[i][0], (uint64_t) edge_list[i][1]);
 }
 
 
 
 
 //Print array (double)
-void print_predictions(int8_t* arr, uint64_t N){ 
+void print_predictions(class_t* arr, sz_long N){ 
 	printf("Predicted labels: \n");
-	for(uint64_t i=0;i<N;i++) printf("%"PRId8"\n",arr[i]);
+	for(sz_long i=0;i<N;i++) printf("%"PRIi16"\n", (int16_t) arr[i]);
 }
 
 //Check if file is valid
@@ -359,21 +359,21 @@ int file_isreg(char *path) {
 
 
 //Elementwise subtract b from a and store in c 
-void my_array_sub(double* c, double* a, double* b, uint64_t N ){	
-	for(uint64_t i=0;i<N;i++) c[i] = a[i] -b[i]; 
+void my_array_sub(double* c, double* a, double* b, sz_long N ){	
+	for(sz_long i=0;i<N;i++) c[i] = a[i] -b[i]; 
 }
 
 //Max of array 
 
-uint8_t max_u8( uint8_t* a, uint64_t N ){
-	uint8_t max= 0;
-	for(uint64_t i=0; i<N ; i++) max = ( a[i]>max ) ? a[i] : max ; 
+sz_short max_u8( sz_short* a, sz_long N ){
+	sz_short max= 0;
+	for(sz_long i=0; i<N ; i++) max = ( a[i]>max ) ? a[i] : max ; 
 	return max;
 }
 
-uint64_t max_u64( uint64_t* a, uint64_t N ){
-	uint64_t max= 0;
-	for(uint64_t i=0; i<N ; i++) max = ( a[i]>max ) ? a[i] : max ; 
+sz_long max_u64( sz_long* a, sz_long N ){
+	sz_long max= 0;
+	for(sz_long i=0; i<N ; i++) max = ( a[i]>max ) ? a[i] : max ; 
 	return max;
 }
 
@@ -381,12 +381,12 @@ uint64_t max_u64( uint64_t* a, uint64_t N ){
 
 //Return edge list and count to main 
 
-uint64_t** give_edge_list( char* file_name, uint64_t* count ){ 
+sz_long** give_edge_list( char* file_name, sz_long* count ){ 
 
-	uint64_t** buffer= (uint64_t **)malloc(EDGE_BUFF_SIZE * sizeof(uint64_t *));
+	sz_long** buffer= (sz_long **)malloc(EDGE_BUFF_SIZE * sizeof(sz_long *));
  
-	for(uint64_t i=0;i<EDGE_BUFF_SIZE;i++)
-		buffer[i]= (uint64_t*) malloc(2*sizeof(uint64_t));
+	for(sz_long i=0;i<EDGE_BUFF_SIZE;i++)
+		buffer[i]= (sz_long*) malloc(2*sizeof(sz_long));
 
 	FILE* file= fopen(file_name, "r");
 
@@ -394,22 +394,22 @@ uint64_t** give_edge_list( char* file_name, uint64_t* count ){
 
 	// Read adjacency into buffer into buffer and return length count=edges
 	*count= read_adjacency_to_buffer(buffer,file);
-	printf("Number of edges: %"PRIu64"\n", *count);
+	printf("Number of edges: %"PRIu64"\n", (uint64_t) *count);
 
 	//print_edge_list( buffer, *count);
 
 	//Free excess memory
-	for(uint64_t i=*count+1;i<EDGE_BUFF_SIZE;i++)
+	for(sz_long i=*count+1;i<EDGE_BUFF_SIZE;i++)
 	{free(buffer[i]);}
-	buffer=realloc(buffer,(*count)*sizeof(uint64_t*));
+	buffer=realloc(buffer,(*count)*sizeof(sz_long*));
 
 	return buffer;
 }
 
 
 //Read .txt file into buffer
-uint64_t read_adjacency_to_buffer(uint64_t** buffer, FILE* file){
-        uint64_t count = 0;
+sz_long read_adjacency_to_buffer(sz_long** buffer, FILE* file){
+        sz_long count = 0;
 	for (; count < EDGE_BUFF_SIZE; ++count)
 	{
 		int got = fscanf(file, "%"SCNu64"\t%"SCNu64"\n", &buffer[count][0] , &buffer[count][1]);
@@ -422,24 +422,24 @@ uint64_t read_adjacency_to_buffer(uint64_t** buffer, FILE* file){
 
 
 //Read class.txt file into buffer (ignore first collumn here)
-int8_t* read_labels(char* filename, uint64_t* label_count){
-	uint64_t count = 0;
-	uint64_t* indexes = (uint64_t*) malloc(sizeof(uint64_t)*CLASS_BUFF_SIZE);
-	int8_t* buffer = (int8_t*) malloc(sizeof(int8_t)*CLASS_BUFF_SIZE);
+class_t* read_labels(char* filename, sz_long* label_count){
+	sz_long count = 0;
+	sz_long* indexes = (sz_long*) malloc(sizeof(sz_long)*CLASS_BUFF_SIZE);
+	class_t* buffer = (class_t*) malloc(sizeof(class_t)*CLASS_BUFF_SIZE);
 	FILE* file= fopen(filename, "r");
 
 	if(!file) printf("ERROR: Cannot open label file");
 
 	for (; count < CLASS_BUFF_SIZE; ++count)
 	{
-		int got = fscanf(file, "%"SCNu64"%"SCNi8"", &indexes[count] , &buffer[count]);
+		int got = fscanf(file, "%"SCNu64"%"SCNu8"", &indexes[count] , &buffer[count]);
 		if (got != 2) break; // wrong number of tokens - maybe end of file
 	}
 	fclose(file);
 
 	*label_count = count;
-	buffer = realloc(buffer,sizeof(int8_t)*count);
-	indexes = realloc(indexes,sizeof(uint64_t)*count);
+	buffer = realloc(buffer,sizeof(class_t)*count);
+	indexes = realloc(indexes,sizeof(sz_long)*count);
 
 	
 	my_relative_sorting( indexes, buffer, count );
@@ -450,37 +450,37 @@ int8_t* read_labels(char* filename, uint64_t* label_count){
 }
 
 //Read seed and label file when in operation mode
-uint64_t* read_seed_file( char* filename, uint16_t* num_seeds, uint8_t* num_class, abstract_labels* label_in ){
+sz_long* read_seed_file( char* filename, sz_med* num_seeds, sz_short* num_class, abstract_labels* label_in ){
 
         //First read file into buffers
-	uint64_t count = 0;
-	uint64_t* index_buffer = (uint64_t*) malloc(sizeof(uint64_t)*CLASS_BUFF_SIZE);
-	int8_t* label_buffer = (int8_t*) malloc(sizeof(int8_t)*CLASS_BUFF_SIZE);
+	sz_long count = 0;
+	sz_long* index_buffer = (sz_long*) malloc(sizeof(sz_long)*CLASS_BUFF_SIZE);
+	class_t* label_buffer = (class_t*) malloc(sizeof(class_t)*CLASS_BUFF_SIZE);
 	FILE* file= fopen(filename, "r");
 
 	if(!file) printf("ERROR: Cannot open seed file");
 
 	for (; count < CLASS_BUFF_SIZE; ++count)
 	{
-		int got = fscanf(file, "%"SCNu64"%"SCNi8"", &index_buffer[count] , &label_buffer[count]);
+		int got = fscanf(file, "%"SCNu64"%"SCNd8"", &index_buffer[count] , &label_buffer[count]);
 		if (got != 2) break; // wrong number of tokens - maybe end of file
 	}
 	fclose(file);
-	label_buffer = realloc(label_buffer,sizeof(int8_t)*count);
-	index_buffer = realloc(index_buffer,sizeof(uint64_t)*count);
+	label_buffer = realloc(label_buffer,sizeof(class_t)*count);
+	index_buffer = realloc(index_buffer,sizeof(sz_long)*count);
 	
 	//prepare input labels and seeds for is_multilabel or multi_class
 	
-	uint64_t* seed_indices;
+	sz_long* seed_indices;
 	
 	if(label_in->is_multilabel){		
-		*num_class = max_u8( (uint8_t*) label_buffer, count);		
+		*num_class = max_u8( (sz_short*) label_buffer, count);		
 		my_relative_sorting( index_buffer, label_buffer, count );
 		seed_indices = find_unique_from_sorted( index_buffer, count , num_seeds );
 
 		label_in->mlabel = init_one_hot(*num_class , *num_seeds);
-		uint64_t j=0;
-		for(uint64_t i=0;i<count;i++){
+		sz_long j=0;
+		for(sz_long i=0;i<count;i++){
 			if(i>0) j = (index_buffer[i] == index_buffer[i-1] ) ? j : j+1;
 			label_in->mlabel.bin[label_buffer[i]-1][j]=1;
 		}
@@ -490,7 +490,7 @@ uint64_t* read_seed_file( char* filename, uint16_t* num_seeds, uint8_t* num_clas
 	}else{
 		seed_indices = index_buffer;
 		label_in->mclass = label_buffer;
-		*num_seeds = (uint16_t) count;
+		*num_seeds = (sz_med) count;
 	}
 	
 	return seed_indices;
@@ -498,7 +498,7 @@ uint64_t* read_seed_file( char* filename, uint16_t* num_seeds, uint8_t* num_clas
 
 
 //write predicted labels (or ranking in multilabel case) to output file
-void save_predictions(char* filename, abstract_label_output label_out, uint64_t len, uint8_t num_class){
+void save_predictions(char* filename, abstract_label_output label_out, sz_long len, sz_short num_class){
 	
 	FILE* file = fopen(filename, "w");	
 	
@@ -506,29 +506,29 @@ void save_predictions(char* filename, abstract_label_output label_out, uint64_t 
 	
 	if(label_out.is_multilabel){ 
 		val_and_ind line_of_out[num_class];
-		for(uint64_t i=0; i<len; i++){
-			for(uint8_t j=0; j<num_class; j++) line_of_out[j] = (val_and_ind) {.val = label_out.mlabel[j*len + i], .ind=(int)j}; 
+		for(sz_long i=0; i<len; i++){
+			for(sz_short j=0; j<num_class; j++) line_of_out[j] = (val_and_ind) {.val = label_out.mlabel[j*len + i], .ind=(int)j}; 
 				
 			qsort( line_of_out, num_class, sizeof(line_of_out[0]), compare2);
 			
-			fprintf(file, "%"SCNu64":\t", i+1 );
+			fprintf(file, "%"SCNu64":\t", (uint64_t) i+1 );
 			
-			for(uint8_t j=0; j<num_class; j++) fprintf(file, "%"SCNu8" ", line_of_out[j].ind +1 );
+			for(sz_short j=0; j<num_class; j++) fprintf(file, "%"PRIu16" ", (uint16_t) line_of_out[j].ind +1 );
 			
 			fprintf(file, "\n");
 		}
 	}else{
-		for(uint64_t i=0; i<len; i++) fprintf(file, "%"SCNu64"\t%"SCNi8"\n", i+1 , label_out.mclass[i]);	
+		for(sz_long i=0; i<len; i++) fprintf(file, "%"SCNu64"\t%"SCNd16"\n", (uint64_t) i+1 , (int16_t) label_out.mclass[i]);	
 	}
 	
 	fclose(file);
 }
 
 //Read class.txt file into one_hot_matrix (ignore first collumn here)
-one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
-	uint64_t count = 0;
-	uint64_t* indexes = (uint64_t*) malloc(sizeof(uint64_t)*CLASS_BUFF_SIZE);
-	uint8_t* buffer = (uint8_t*) malloc(sizeof(uint8_t)*CLASS_BUFF_SIZE);
+one_hot_mat read_one_hot_mat(char* filename, sz_long* label_count){
+	sz_long count = 0;
+	sz_long* indexes = (sz_long*) malloc(sizeof(sz_long)*CLASS_BUFF_SIZE);
+	sz_short* buffer = (sz_short*) malloc(sizeof(sz_short)*CLASS_BUFF_SIZE);
 	FILE* file = fopen(filename, "r");
 
 	if(!file) printf("ERROR: Cannot open label file");
@@ -540,18 +540,18 @@ one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
 	}
 	fclose(file);
 
-	buffer = realloc(buffer,sizeof(uint8_t)*count);
-	indexes = realloc(indexes,sizeof(uint64_t)*count);
+	buffer = realloc(buffer,sizeof(sz_short)*count);
+	indexes = realloc(indexes,sizeof(sz_long)*count);
 	
-	uint8_t num_class = max_u8( buffer, count);
+	sz_short num_class = max_u8( buffer, count);
 
-	uint64_t length = max_u64( indexes, count);
+	sz_long length = max_u64( indexes, count);
 	
 //	printf("LENGTH %"PRIu64"\n",length);
 
 	one_hot_mat all_labels = init_one_hot(num_class , length);
 	
-	for(uint64_t i=0;i<count;i++) all_labels.bin[buffer[i]-1][indexes[i]-1]=1; 
+	for(sz_long i=0;i<count;i++) all_labels.bin[buffer[i]-1][indexes[i]-1]=1; 
 
 	*label_count = length;
       		        		
@@ -561,15 +561,15 @@ one_hot_mat read_one_hot_mat(char* filename, uint64_t* label_count){
 }
 
 // Sort A and ind with respect to indexes in ind
-void my_relative_sorting( uint64_t* ind, int8_t* A, uint64_t len ){ 
-	uint64_t* temp = (uint64_t*)malloc(len*sizeof(uint64_t));
-	uint64_t* sorted_inds = (uint64_t*)malloc(len*sizeof(uint64_t));
+void my_relative_sorting( sz_long* ind, class_t* A, sz_long len ){ 
+	sz_long* temp = (sz_long*)malloc(len*sizeof(sz_long));
+	sz_long* sorted_inds = (sz_long*)malloc(len*sizeof(sz_long));
 
 
-	for(uint64_t i=0;i<len;i++){ temp[i] = i ;}
+	for(sz_long i=0;i<len;i++){ temp[i] = i ;}
 
 
-	uint64_t** zipped_arrays = zip_arrays(ind,temp,len); 
+	sz_long** zipped_arrays = zip_arrays(ind,temp,len); 
  
 
         qsort( zipped_arrays , len, sizeof(zipped_arrays[0]), compare); 
@@ -577,7 +577,7 @@ void my_relative_sorting( uint64_t* ind, int8_t* A, uint64_t len ){
 	
         unzip_array(zipped_arrays, temp, sorted_inds, len );
 
-        rearange(sorted_inds, (void*) A, "int8_t" , len );
+        rearange(sorted_inds, (void*) A, "class_t" , len );
 	
 	free(temp);
 	free(sorted_inds);
@@ -586,11 +586,11 @@ void my_relative_sorting( uint64_t* ind, int8_t* A, uint64_t len ){
 
 
 //Zip two arrays into a list of length-2 lists
-uint64_t** zip_arrays(uint64_t* A, uint64_t* B, uint64_t len){
-	uint64_t** zipped = (uint64_t**)malloc(len*sizeof(uint64_t*));
+sz_long** zip_arrays(sz_long* A, sz_long* B, sz_long len){
+	sz_long** zipped = (sz_long**)malloc(len*sizeof(sz_long*));
 	
-	for(uint64_t i=0;i<len;i++){ 
-		zipped[i] = (uint64_t*)malloc(2*sizeof(uint64_t)); 
+	for(sz_long i=0;i<len;i++){ 
+		zipped[i] = (sz_long*)malloc(2*sizeof(sz_long)); 
                 ** (zipped +i) = A[i]; 
                 *(* (zipped +i)+1) = B[i]; 
 	}
@@ -599,9 +599,9 @@ uint64_t** zip_arrays(uint64_t* A, uint64_t* B, uint64_t len){
 
 
 //Unzip two arrays into input pointers and destroy zipped array
-void unzip_array(uint64_t** zipped, uint64_t* unzip_1, uint64_t* unzip_2, uint64_t len ){
+void unzip_array(sz_long** zipped, sz_long* unzip_1, sz_long* unzip_2, sz_long len ){
 		
-	for(uint64_t i=0;i<len;i++){
+	for(sz_long i=0;i<len;i++){
 		unzip_1[i] = zipped[i][0];
 		unzip_2[i] = zipped[i][1];
 		free(*(zipped+i));
@@ -612,48 +612,48 @@ void unzip_array(uint64_t** zipped, uint64_t* unzip_1, uint64_t* unzip_2, uint64
 
 //Rearange elements of array A accortding to given indexes
 //Works for any type of array as long as the type is provided
-void rearange(uint64_t* ind, void* A, char* type , uint64_t len ){
+void rearange(sz_long* ind, void* A, char* type , sz_long len ){
 
 	if(strcmp(type,"double")==0){ 
 		double A_temp[len];
 		memcpy(A_temp, A, len*sizeof(double));  
-		for(uint64_t i=0;i<len;i++){ *((double*)A + i) = A_temp[ind[i]];}
-	}else if(strcmp(type,"uint64_t")==0){
-		uint64_t A_temp[len];
-		memcpy(A_temp, A, len*sizeof(uint64_t));  
-		for(uint64_t i=0;i<len;i++){ *((uint64_t*)A + i) = A_temp[ind[i]];}		
+		for(sz_long i=0;i<len;i++){ *((double*)A + i) = A_temp[ind[i]];}
+	}else if(strcmp(type,"sz_long")==0){
+		sz_long A_temp[len];
+		memcpy(A_temp, A, len*sizeof(sz_long));  
+		for(sz_long i=0;i<len;i++){ *((sz_long*)A + i) = A_temp[ind[i]];}		
 	}else if(strcmp(type,"uint32_t")==0){
 		uint32_t A_temp[len];
 		memcpy(A_temp, A, len*sizeof(uint32_t));  
-		for(uint64_t i=0;i<len;i++){ *((uint32_t*)A + i) = A_temp[ind[i]];}
-	}else if(strcmp(type,"uint16_t")==0){
-		uint16_t A_temp[len];
-		memcpy(A_temp, A, len*sizeof(uint16_t));  
-		for(uint64_t i=0;i<len;i++){ *((uint16_t*)A + i) = A_temp[ind[i]];}		
-	}else if(strcmp(type,"uint8_t")==0){
-		uint8_t A_temp[len];
-		memcpy(A_temp, A, len*sizeof(uint8_t));  
-		for(uint64_t i=0;i<len;i++){ *((uint8_t*)A + i) = A_temp[ind[i]];}		
+		for(sz_long i=0;i<len;i++){ *((uint32_t*)A + i) = A_temp[ind[i]];}
+	}else if(strcmp(type,"sz_med")==0){
+		sz_med A_temp[len];
+		memcpy(A_temp, A, len*sizeof(sz_med));  
+		for(sz_long i=0;i<len;i++){ *((sz_med*)A + i) = A_temp[ind[i]];}		
+	}else if(strcmp(type,"sz_short")==0){
+		sz_short A_temp[len];
+		memcpy(A_temp, A, len*sizeof(sz_short));  
+		for(sz_long i=0;i<len;i++){ *((sz_short*)A + i) = A_temp[ind[i]];}		
 	}else if(strcmp(type,"int32_t")==0){
 		int32_t A_temp[len];
 		memcpy(A_temp, A, len*sizeof(int32_t));  
-		for(uint64_t i=0;i<len;i++){ *((int32_t*)A + i) = A_temp[ind[i]];}		
+		for(sz_long i=0;i<len;i++){ *((int32_t*)A + i) = A_temp[ind[i]];}		
 	}else if(strcmp(type,"int16_t")==0){
 		int16_t A_temp[len];
 		memcpy(A_temp, A, len*sizeof(int16_t));  
-		for(uint64_t i=0;i<len;i++){ *((int16_t*)A + i) = A_temp[ind[i]];}
-	}else if(strcmp(type,"int8_t")==0){
-		int8_t A_temp[len];
-		memcpy(A_temp, A, len*sizeof(int8_t));  
-		for(uint64_t i=0;i<len;i++){ *((int8_t*)A + i) = A_temp[ind[i]];}
+		for(sz_long i=0;i<len;i++){ *((int16_t*)A + i) = A_temp[ind[i]];}
+	}else if(strcmp(type,"class_t")==0){
+		class_t A_temp[len];
+		memcpy(A_temp, A, len*sizeof(class_t));  
+		for(sz_long i=0;i<len;i++){ *((class_t*)A + i) = A_temp[ind[i]];}
 	}else if(strcmp(type,"long double")==0){
 		long double A_temp[len];
 		memcpy(A_temp, A, len*sizeof(long double));  
-		for(uint64_t i=0;i<len;i++){ *((long double*)A + i) = A_temp[ind[i]];}  		
+		for(sz_long i=0;i<len;i++){ *((long double*)A + i) = A_temp[ind[i]];}  		
 	}else if(strcmp(type,"int")==0){
 		int A_temp[len];
 		memcpy(A_temp, A, len*sizeof(int));  
-		for(uint64_t i=0;i<len;i++){ *((int*)A + i) = A_temp[ind[i]];}
+		for(sz_long i=0;i<len;i++){ *((int*)A + i) = A_temp[ind[i]];}
 	}else{
 		printf("Unknown rearange type\n");
 		exit(EXIT_FAILURE);
@@ -665,20 +665,20 @@ void rearange(uint64_t* ind, void* A, char* type , uint64_t len ){
 
 //Remove items of given indexes from array (list)
 // Return result in NEW  list 
-uint64_t* remove_from_list(const uint64_t* list, const uint64_t* indexes_to_be_removed, 
-			   uint64_t len, uint64_t num_removed ){
+sz_long* remove_from_list(const sz_long* list, const sz_long* indexes_to_be_removed, 
+			   sz_long len, sz_long num_removed ){
 
-	uint64_t* new_list = (uint64_t*) malloc((len-num_removed)*sizeof(uint64_t));
+	sz_long* new_list = (sz_long*) malloc((len-num_removed)*sizeof(sz_long));
 
 	int mask[len];
 	
 	memset(mask, 0, len*sizeof(int));
 	
-	for(uint64_t i =0; i<num_removed; i++){ mask[indexes_to_be_removed[i]] =1 ;}
+	for(sz_long i =0; i<num_removed; i++){ mask[indexes_to_be_removed[i]] =1 ;}
 
 	
-	uint64_t k=0;
-	for(uint64_t i =0; i<len; i++){
+	sz_long k=0;
+	for(sz_long i =0; i<len; i++){
 		if(mask[i]==0){
 		    new_list[k++] = list[i];			
 		}
@@ -691,14 +691,14 @@ uint64_t* remove_from_list(const uint64_t* list, const uint64_t* indexes_to_be_r
 
 //Find unique elements among known number of entries in buffer
 //Also eturn number of unique entries
-uint8_t find_unique(int8_t* unique_elements, const int8_t* buffer,uint16_t N){
+sz_short find_unique(class_t* unique_elements, const class_t* buffer,sz_med N){
 	 
-	uint8_t new,end=1;
+	sz_short new,end=1;
 
 	unique_elements[0]=buffer[0];
-	for(uint16_t i=0;i<N;i++){
+	for(sz_med i=0;i<N;i++){
 		new=1;
-		for(uint8_t j=0;j<end;j++)
+		for(sz_short j=0;j<end;j++)
 		{if(unique_elements[j]==buffer[i])
 			new=0;}
 
@@ -710,18 +710,18 @@ uint8_t find_unique(int8_t* unique_elements, const int8_t* buffer,uint16_t N){
 }
 
 //Find unique entries from list of sorted (unisgned indexes) 
-uint64_t* find_unique_from_sorted( uint64_t* sorted_buffer, uint64_t len , uint16_t* num_unique ){
-	uint64_t* unique = (uint64_t*) malloc(len*sizeof(uint64_t));
+sz_long* find_unique_from_sorted( sz_long* sorted_buffer, sz_long len , sz_med* num_unique ){
+	sz_long* unique = (sz_long*) malloc(len*sizeof(sz_long));
 	*num_unique = 1;
 	
 	unique[0] = sorted_buffer[0]; 
-	for(uint64_t i=1;i<len;i++){
+	for(sz_long i=1;i<len;i++){
 		if(!(sorted_buffer[i] == sorted_buffer[i-1] )){
 			*num_unique += 1;
 			unique[*num_unique-1] = sorted_buffer[i];	
 		}		
 	} 	
-	unique = realloc(unique,*num_unique*sizeof(uint64_t));
+	unique = realloc(unique,*num_unique*sizeof(sz_long));
 	return unique;
 }
 
@@ -729,13 +729,13 @@ uint64_t* find_unique_from_sorted( uint64_t* sorted_buffer, uint64_t len , uint1
 // Label count is number of indexes with known labels
 // label_count<=length
 //If label_count<=length, then rows of the one_hot matrix without a coresponding labeled index will be [0...0]
-one_hot_mat list_to_one_hot( uint64_t* ind , int8_t* labels, uint8_t num_class ,
-			     int8_t* class ,  uint64_t label_count ,uint64_t length){
+one_hot_mat list_to_one_hot( sz_long* ind , class_t* labels, sz_short num_class ,
+			     class_t* class ,  sz_long label_count ,sz_long length){
 	
 	one_hot_mat one_hot = init_one_hot( num_class , length);
 	
-	for(uint64_t i=0;i<label_count;i++){ 
-		for(uint8_t j=0;j<num_class;j++){ 
+	for(sz_long i=0;i<label_count;i++){ 
+		for(sz_short j=0;j<num_class;j++){ 
 			if( labels[i] == class[j] ){
 				one_hot.bin[j][ind[i]]=1;
 				break;
@@ -748,13 +748,13 @@ one_hot_mat list_to_one_hot( uint64_t* ind , int8_t* labels, uint8_t num_class ,
 
 
 //Allocate one_hot_mat
-one_hot_mat init_one_hot(uint8_t num_class ,uint64_t length){	
+one_hot_mat init_one_hot(sz_short num_class ,sz_long length){	
 	one_hot_mat one_hot;
-	one_hot.bin = (uint8_t**) malloc(num_class*sizeof(uint8_t*));
+	one_hot.bin = (sz_short**) malloc(num_class*sizeof(sz_short*));
 
-	for(uint8_t i=0;i<num_class;i++){ 
-		one_hot.bin[i] = (uint8_t*) malloc(length*sizeof(uint8_t)); 
-		for(uint64_t j=0;j<length;j++){	        
+	for(sz_short i=0;i<num_class;i++){ 
+		one_hot.bin[i] = (sz_short*) malloc(length*sizeof(sz_short)); 
+		for(sz_long j=0;j<length;j++){	        
 			one_hot.bin[i][j] =0 ;
 		}
 	}		
@@ -766,17 +766,17 @@ one_hot_mat init_one_hot(uint8_t num_class ,uint64_t length){
 
 // Destroy (free) one_hot matrix
 void destroy_one_hot(one_hot_mat one_hot){
-	for(uint8_t i=0;i<one_hot.num_class;i++) free(one_hot.bin[i]); 
+	for(sz_short i=0;i<one_hot.num_class;i++) free(one_hot.bin[i]); 
 	free(one_hot.bin);
 }
 
 
 // Return array with number of non-zero entries in each row of one-hot-matrix
-uint8_t* return_num_labels_per_node( one_hot_mat one_hot ){
-	uint8_t* num_labels = (uint8_t*)malloc(one_hot.length*sizeof(uint8_t));
-	for(uint64_t i=0;i<one_hot.length;i++){
+sz_short* return_num_labels_per_node( one_hot_mat one_hot ){
+	sz_short* num_labels = (sz_short*)malloc(one_hot.length*sizeof(sz_short));
+	for(sz_long i=0;i<one_hot.length;i++){
 		num_labels[i]=0;
-		for(uint8_t j=0;j<one_hot.num_class;j++) num_labels[i]+= one_hot.bin[j][i];		
+		for(sz_short j=0;j<one_hot.num_class;j++) num_labels[i]+= one_hot.bin[j][i];		
 	}
 	return num_labels;
 }
@@ -784,16 +784,16 @@ uint8_t* return_num_labels_per_node( one_hot_mat one_hot ){
 
 // Return a one_hot_mat with non-zeros for each row given to the k-largest (specified by num_lpn) corresponding soft labels
 // Does not do sorting and has O(kC) complexity per node instead of O(C logC). Will be slow if C and k large
-one_hot_mat top_k_mlabel( double* soft_labels , uint8_t* num_lpn, uint64_t length, uint8_t num_class ){
+one_hot_mat top_k_mlabel( double* soft_labels , sz_short* num_lpn, sz_long length, sz_short num_class ){
 	double max_max,max,val;
-	uint8_t max_ind;
+	sz_short max_ind;
 	one_hot_mat label_out = init_one_hot(num_class ,length);
 		
-	for(uint64_t i=0; i<length;i++ ){
+	for(sz_long i=0; i<length;i++ ){
 		max_max =1.1f;
-		for(uint8_t k = 0; k<num_lpn[i];k++){
+		for(sz_short k = 0; k<num_lpn[i];k++){
 			max = 0.0f;
-			for(uint8_t j=0; j<num_class ;j++ ){
+			for(sz_short j=0; j<num_class ;j++ ){
 				val = soft_labels[j*length +i]; 
 				if( ( val < max_max) && (val > max) ){
 					max = val;
@@ -811,15 +811,15 @@ one_hot_mat top_k_mlabel( double* soft_labels , uint8_t* num_lpn, uint64_t lengt
 
 // Computes rate of true positive, False positive and false negative
 // A binary mask determines which values I am interested in (usually unlabeled entries..)
-detector_stats get_detector_stats( uint8_t* true_val, uint8_t* pred_val, uint64_t len, int* mask ){
+detector_stats get_detector_stats( sz_short* true_val, sz_short* pred_val, sz_long len, int* mask ){
 	
 	detector_stats stats = {.true_pos = 0.0,
 			        .true_neg =0.0,	
 			        .false_pos = 0.0,
 			        .false_neg = 0.0};
 	
-	uint64_t k=0;
-	for(uint64_t i=0;i<len;i++){
+	sz_long k=0;
+	for(sz_long i=0;i<len;i++){
 	    if(mask[i]!=0){		
 	    	k++;
 		if(true_val[i]==1){
@@ -859,7 +859,7 @@ double harmonic_mean( double x, double y ){
 
 // Produce micro and macro averaged precision and recall
 // Input is the more simple detector_stats for different classes 
-classifier_stats  get_class_stats(detector_stats* all_stats , uint8_t num_class ){
+classifier_stats  get_class_stats(detector_stats* all_stats , sz_short num_class ){
 
 	classifier_stats stats = {.micro_precision=0.0f,
 				  .macro_precision=0.0f,
@@ -868,7 +868,7 @@ classifier_stats  get_class_stats(detector_stats* all_stats , uint8_t num_class 
 	
 	double sum_of_true_pos = 0.0f, micro_prec_denom = 0.0f, micro_recall_denom = 0.0f ;
 
-	for(uint8_t i=0; i<num_class;i++){
+	for(sz_short i=0; i<num_class;i++){
 		sum_of_true_pos += all_stats[i].true_pos;
 		micro_prec_denom += all_stats[i].true_pos + all_stats[i].false_pos;		
 		micro_recall_denom += all_stats[i].true_pos + all_stats[i].false_neg;
@@ -890,9 +890,9 @@ classifier_stats  get_class_stats(detector_stats* all_stats , uint8_t num_class 
 
 // Takes array of detector statistics as input and returns array with f-1 scores for every class
 
-void get_per_class_f1_scores(double* f1_per_class, detector_stats* all_stats, uint8_t num_class ){
+void get_per_class_f1_scores(double* f1_per_class, detector_stats* all_stats, sz_short num_class ){
 	
-	for(uint8_t i=0;i<num_class;i++){ 
+	for(sz_short i=0;i<num_class;i++){ 
 		double TP = all_stats[i].true_pos;
 		double FN = all_stats[i].false_neg;
 		double FP = all_stats[i].false_pos;
@@ -906,7 +906,7 @@ void get_per_class_f1_scores(double* f1_per_class, detector_stats* all_stats, ui
 // Inputs must be one_hot structs
 // f1_scores are only evaluated on the indexes denoted by unlabeled
 
-f1_scores get_averaged_f1_scores(one_hot_mat true_labels, one_hot_mat pred_labels, uint64_t* unlabeled , uint64_t num_unlabeled ){
+f1_scores get_averaged_f1_scores(one_hot_mat true_labels, one_hot_mat pred_labels, sz_long* unlabeled , sz_long num_unlabeled ){
 	
 	if( (true_labels.num_class != pred_labels.num_class) || (true_labels.length != pred_labels.length) ){
 		printf("Classifier stats ERROR: One-hot matrixes dimensions dont match\n");
@@ -915,13 +915,13 @@ f1_scores get_averaged_f1_scores(one_hot_mat true_labels, one_hot_mat pred_label
 
 	int mask[true_labels.length];
 	memset(mask, 0 , true_labels.length*sizeof(int));
-	for(uint64_t i=0;i< num_unlabeled; i++ ){ mask[unlabeled[i]]=1; }
+	for(sz_long i=0;i< num_unlabeled; i++ ){ mask[unlabeled[i]]=1; }
 
         // Start by gathering detection statistics per each class 
 
 	detector_stats all_stats[true_labels.num_class];
 
-	for(uint8_t i=0;i<true_labels.num_class;i++){
+	for(sz_short i=0;i<true_labels.num_class;i++){
 		all_stats[i] = get_detector_stats( true_labels.bin[i] , pred_labels.bin[i] , true_labels.length , mask );
 	}
 
@@ -950,9 +950,9 @@ f1_scores get_averaged_f1_scores(one_hot_mat true_labels, one_hot_mat pred_label
 
 //Compute error rate
 
-double accuracy(int8_t* true_label, int8_t* pred,  uint64_t* unlabeled, uint64_t num_unlabeled){
+double accuracy(class_t* true_label, class_t* pred,  sz_long* unlabeled, sz_long num_unlabeled){
 	double sum=0.0;
-	for(uint64_t i=0;i<num_unlabeled;i++){
+	for(sz_long i=0;i<num_unlabeled;i++){
 			if(true_label[unlabeled[i]]==pred[unlabeled[i]])
 				sum+=1.0;
 		}		     

@@ -68,6 +68,20 @@
 
 #define L2_REG_LAMBDA 0.05
 
+
+//INTEGER TYPES
+
+typedef uint64_t sz_long; //Long range unsinged integer. Used for node and edge indexing.
+
+typedef uint16_t sz_med; //Medium range unsinged integer. Used for random walk length, 
+                         //iteration indexing and seed indexing
+
+typedef uint8_t sz_short; //Short range unsigned integer. Used for class and thread indexing.
+
+typedef int8_t class_t; // Short integer for actual label values.
+
+
+
 //DATA STRUCTURES
 
 //structs to store classification and detection performance statistics
@@ -99,23 +113,23 @@ typedef struct{
 //struct for for one-hot-type matrix
 
 typedef struct{
-	uint8_t** bin;
-	uint8_t num_class;
-	uint64_t length;	
+	sz_short** bin;
+	sz_short num_class;
+	sz_long length;	
 } one_hot_mat; 
 
 // Abstract label formats (list or one-hot-matrix)
 
 typedef struct{	
 	bool is_multilabel; 
-	int8_t* mclass;	
+	class_t* mclass;	
 	one_hot_mat mlabel;
 } abstract_labels;
 
 
 typedef struct{	
 	bool is_multilabel;
-	int8_t* mclass;	
+	class_t* mclass;	
 	double* mlabel;		
 } abstract_label_output;
 
@@ -132,15 +146,15 @@ typedef struct{
 	double lambda_trwr;
 	double lambda_addf;
 	double tel_prob;
-	uint16_t num_seeds;
-	uint16_t num_iters;
+	sz_med num_seeds;
+	sz_med num_iters;
 	char* graph_filename;
 	char* label_filename;
 	char* method;
 	char* mode;
 	char* outfile;
-	uint16_t walk_length;
-	uint8_t method_index;
+	sz_med walk_length;
+	sz_short method_index;
 	bool no_constr;
 	bool is_multilabel;
 	bool single_thread;	
@@ -152,11 +166,11 @@ typedef struct{
 
 typedef struct{
 	double* csr_value;
-	uint64_t* csr_column;
-	uint64_t* csr_row_pointer;
-	uint64_t  num_nodes;
-	uint64_t  nnz;
-	uint64_t* degrees;
+	sz_long* csr_column;
+	sz_long* csr_row_pointer;
+	sz_long  num_nodes;
+	sz_long  nnz;
+	sz_long* degrees;
 } csr_graph;
 
 
@@ -169,25 +183,25 @@ typedef struct {
 	double* G_s; 
 	double* G_s_next; 
 	csr_graph graph;
-	uint64_t* seeds;	
-	uint16_t M;
+	sz_long* seeds;	
+	sz_med M;
 	double tel_prob;
-	uint16_t* iter;
-	uint16_t from;
-	uint16_t to;
+	sz_med* iter;
+	sz_med from;
+	sz_med to;
 } pass_to_thread_type_1;
 
 typedef struct {
 	double* soft_labels;
-	uint8_t* class_ind;
-	uint16_t num_seeds;	 
-	uint16_t* num_per_class;
-	uint8_t from;
-	uint8_t to;
-	uint8_t num_local_classes;
+	sz_short* class_ind;
+	sz_med num_seeds;	 
+	sz_med* num_per_class;
+	sz_short from;
+	sz_short to;
+	sz_short num_local_classes;
 	csr_graph graph;
-	const uint64_t* seeds;	
-	uint16_t walk_length;
+	const sz_long* seeds;	
+	sz_med walk_length;
 	double lambda;
 	bool no_constr;
 }pass_to_thread_type_2;

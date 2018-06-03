@@ -5,7 +5,7 @@
 
 #include"my_defs.h"
 
-uint64_t Tuned_RwR( abstract_label_output* , const uint64_t** , uint64_t , const uint64_t* , abstract_labels , cmd_args );
+sz_long Tuned_RwR( abstract_label_output* , const sz_long** , sz_long , const sz_long* , abstract_labels , cmd_args );
 
 
 #endif

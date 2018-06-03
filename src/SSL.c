@@ -65,36 +65,36 @@ int SSL_predict(cmd_args args){
 			
 	//Parse graph
 	printf("Reading edgelist file...\n");
-	uint64_t edge_count;
-	uint64_t** edge_list;
+	sz_long edge_count;
+	sz_long** edge_list;
 	edge_list =  give_edge_list( args.graph_filename, &edge_count );
 	
 	//Parse labels
 	printf("Reading seed file...\n");
 	abstract_labels label_in;
 	label_in.is_multilabel=args.is_multilabel;
-	uint64_t* seeds;
-	uint8_t num_class;
+	sz_long* seeds;
+	sz_short num_class;
 	seeds = read_seed_file( args.label_filename, &args.num_seeds, &num_class, &label_in );		
-	printf("Number of seed nodes:%"PRIu16" \n",args.num_seeds);
+	printf("Number of seed nodes:%"PRIu32" \n", (uint32_t) args.num_seeds);
 	
 	//Call method		
-	uint64_t graph_size;
+	sz_long graph_size;
 	abstract_label_output label_out;	
 	label_out.is_multilabel=args.is_multilabel;	
 	if(args.method_index==0){
 		printf("Executing Tunded_RwR...\n");
-		graph_size=Tuned_RwR( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds, 
+		graph_size=Tuned_RwR( &label_out, (const sz_long**)edge_list, edge_count, (const sz_long*) seeds, 
 				     label_in , args);		
 	}else if(args.method_index==1){
                 printf("Executing AdaDIF...\n");
-		graph_size=AdaDIF( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds,
+		graph_size=AdaDIF( &label_out, (const sz_long**)edge_list, edge_count, (const sz_long*) seeds,
 				   label_in , args);	        		
 	}else if(args.method_index==2){
                 printf("AdaDIF_LOO not ready yet\n");
 	}else{
                 printf("Executing PPR...\n");
-		graph_size=my_PPR( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds, 
+		graph_size=my_PPR( &label_out, (const sz_long**)edge_list, edge_count, (const sz_long*) seeds, 
 				   label_in , args);			
 	}			
 	
@@ -103,7 +103,7 @@ int SSL_predict(cmd_args args){
 	save_predictions(args.outfile, label_out, graph_size, num_class);
 	
 	//free buffers
-	for(uint64_t i=0;i<edge_count;i++) free(edge_list[i]);
+	for(sz_long i=0;i<edge_count;i++) free(edge_list[i]);
 	free(edge_list);
 	free(seeds);
         if(args.is_multilabel){
@@ -126,11 +126,11 @@ int SSL_predict(cmd_args args){
 int SSL_test(cmd_args args)
 {
 	double average_micro_f1=0.0, average_macro_f1=0.0; 
-	uint16_t iter=0;
+	sz_med iter=0;
 	
 	//Parse graph
-	uint64_t edge_count;
-	uint64_t** edge_list;
+	sz_long edge_count;
+	sz_long** edge_list;
 	edge_list =  give_edge_list(args.graph_filename,&edge_count);
 
 	//Parse labels	
@@ -142,23 +142,23 @@ int SSL_test(cmd_args args)
 	label_out.is_multilabel=args.is_multilabel;
 	all_labels.is_multilabel=args.is_multilabel;
 	
-	uint64_t label_count;
-	uint8_t* num_labels_per_node;
+	sz_long label_count;
+	sz_short* num_labels_per_node;
 	
 	if(args.is_multilabel){
 		all_labels.mlabel = read_one_hot_mat(args.label_filename, &label_count); // All true labels in one-hot-matrix form 
-		label_in.mlabel = init_one_hot( all_labels.mlabel.num_class , (uint64_t) args.num_seeds); 
+		label_in.mlabel = init_one_hot( all_labels.mlabel.num_class , (sz_long) args.num_seeds); 
 		num_labels_per_node = return_num_labels_per_node( all_labels.mlabel );
 	}else{
 		all_labels.mclass = read_labels(args.label_filename, &label_count);  // All true labels in list form 
-                label_in.mclass = (int8_t*) malloc(args.num_seeds*sizeof(int8_t));	
+                label_in.mclass = (class_t*) malloc(args.num_seeds*sizeof(class_t));	
 	}
 	
 
 	//RUN EXPERIMENTS
-	uint64_t* seeds=malloc(args.num_seeds*sizeof(uint64_t));
-	uint64_t default_ind[label_count];
-	for(uint64_t i=0;i<label_count;i++) default_ind[i]=i;
+	sz_long* seeds=malloc(args.num_seeds*sizeof(sz_long));
+	sz_long default_ind[label_count];
+	for(sz_long i=0;i<label_count;i++) default_ind[i]=i;
 
  	srand(time(NULL)); //seed the random number generator
 
@@ -167,23 +167,23 @@ int SSL_test(cmd_args args)
 		random_sample(seeds, label_in, all_labels, args.num_seeds, label_count);			
 			
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		uint64_t graph_size;
+		sz_long graph_size;
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// THIS IS WHERE I CALL THE METHOD THAT I WANT TO TEST
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if(args.method_index==0){
-			printf("Execution %"PRIu16" of Tunded_RwR...",iter);
-			graph_size=Tuned_RwR( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds, 
+			printf("Execution %"PRIu32" of Tunded_RwR...", (uint32_t) iter);
+			graph_size=Tuned_RwR( &label_out, (const sz_long**)edge_list, edge_count, (const sz_long*) seeds, 
 					     label_in , args);		
 		}else if(args.method_index==1){
-                        printf("Execution %"PRIu16" of AdaDIF...",iter);
-			graph_size=AdaDIF( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds,
+                        printf("Execution %"PRIu32" of AdaDIF...", (uint32_t) iter);
+			graph_size=AdaDIF( &label_out, (const sz_long**)edge_list, edge_count, (const sz_long*) seeds,
 					   label_in , args);	        		
 		}else if(args.method_index==2){
                         printf("AdaDIF_LOO not ready yet\n");
 		}else{
-                        printf("Execution %"PRIu16" of PPR...",iter);
-			graph_size=my_PPR( &label_out, (const uint64_t**)edge_list, edge_count, (const uint64_t*) seeds, 
+                        printf("Execution %"PRIu32" of PPR...", (uint32_t) iter);
+			graph_size=my_PPR( &label_out, (const sz_long**)edge_list, edge_count, (const sz_long*) seeds, 
 					   label_in , args);			
 		}		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,10 +191,10 @@ int SSL_test(cmd_args args)
 		if(graph_size!=label_count){printf("ERROR: graph size not matching label size\n");}
 
 	        // Evaluate predictions
-   		uint64_t num_unlabeled = label_count - args.num_seeds;           
-   		for(uint16_t i=0;i<args.num_seeds;i++) seeds[i]-=1;     
-                uint64_t* unlabeled = remove_from_list( (const uint64_t*) default_ind ,
-                				        (const uint64_t*) seeds ,label_count , (uint64_t) args.num_seeds );
+   		sz_long num_unlabeled = label_count - args.num_seeds;           
+   		for(sz_med i=0;i<args.num_seeds;i++) seeds[i]-=1;     
+                sz_long* unlabeled = remove_from_list( (const sz_long*) default_ind ,
+                				        (const sz_long*) seeds ,label_count , (sz_long) args.num_seeds );
 
 		one_hot_mat true_one_hot,pred_one_hot;
 
@@ -202,8 +202,8 @@ int SSL_test(cmd_args args)
 			pred_one_hot = top_k_mlabel( label_out.mlabel , num_labels_per_node, graph_size, label_in.mlabel.num_class);
 			true_one_hot = all_labels.mlabel;
 		}else{
-			int8_t class[args.num_seeds];
-			uint8_t num_class = find_unique( class, (const int8_t*) label_in.mclass, args.num_seeds );			
+			class_t class[args.num_seeds];
+			sz_short num_class = find_unique( class, (const class_t*) label_in.mclass, args.num_seeds );			
 			pred_one_hot = list_to_one_hot( default_ind , label_out.mclass , num_class, class, label_count , label_count); 		
 			true_one_hot = list_to_one_hot( default_ind , all_labels.mclass, num_class, class, label_count , label_count); 		
  		}
@@ -226,7 +226,7 @@ int SSL_test(cmd_args args)
 	printf(" Mean F1 micro: %lf\n Mean F1 macro: %lf\n ", average_micro_f1, average_macro_f1 );
 
 	//free buffers
-	for(uint64_t i=0;i<edge_count;i++) free(edge_list[i]);
+	for(sz_long i=0;i<edge_count;i++) free(edge_list[i]);
 	free(edge_list);
 	free(seeds);
         if(args.is_multilabel){

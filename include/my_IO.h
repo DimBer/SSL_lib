@@ -6,9 +6,9 @@
 #include "my_defs.h"
 
 
-uint8_t handle_labels(const int8_t* , uint16_t , int8_t* , uint8_t* , uint16_t* );
+sz_short handle_labels(const class_t* , sz_med , class_t* , sz_short* , sz_med* );
 
-uint8_t abstract_handle_labels( uint16_t** , uint8_t** , int8_t** , abstract_labels , uint16_t);
+sz_short abstract_handle_labels( sz_med** , sz_short** , class_t** , abstract_labels , sz_med);
 
 void parse_commandline_args(int ,char**  , cmd_args* );
 
