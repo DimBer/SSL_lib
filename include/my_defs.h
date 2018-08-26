@@ -15,25 +15,25 @@
 
 #define NUM_METHODS 4
 
-#define DEFAULT_NUM_WALK 20
+#define DEFAULT_NUM_WALK 10
 
 #define DEFAULT_TEL_PROB 0.05
 
 #define DEFAULT_L_TRWR 1.0
 
-#define DEFAULT_L_ADDF 15.0
+#define DEFAULT_L_ADDF 5.0
 
 #define DEFAULT_ITERS 1
 
-#define DEFAULT_NUM_SEEDS 100
+#define DEFAULT_NUM_SEEDS 1030
 
 #define DEFAULT_UNCONSTRAINED false
 
-#define DEFAULT_MULTILABEL false
+#define DEFAULT_MULTILABEL true
 
-#define DEFAULT_GRAPH "graphs/pubmed_adj.txt"
+#define DEFAULT_GRAPH "graphs/BlogCatalog/adj.txt"
 
-#define DEFAULT_LABEL "graphs/pubmed_label.txt"
+#define DEFAULT_LABEL "graphs/BlogCatalog/class.txt"
 
 #define DEFAULT_OUTFILE "out/label_predictions.txt"
 
