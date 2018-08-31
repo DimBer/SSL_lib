@@ -9,7 +9,7 @@ Two modes available:
 Methods included:
 - PPR: Personalized PageRank
 - TunedRwR: Tuned random walk with restarts ( see [here](https://experts.umn.edu/ws/portalfiles/portal/99184908)  )
-- AdaDIF: Adaptive Diffusions ( see [here](https://arxiv.org/pdf/1804.02081.pdf) )
+- AdaDIF: Adaptive Diffusions ( see [here](https://arxiv.org/abs/1804.02081) )
 	
 
 __INPUT FILES FORMAT__
@@ -47,13 +47,13 @@ ARGUMENT | VALUES | DEFAULT | DESCRIPTION
 -------- | ------ | ------- | -----------
 `--mode` |  `test` <br/> `predict`| `test` | Operational mode (see Overview)    	
 `--method` |  `Tuned_RwR` <br/> `AdaDIF` <br/> `PPR`| `AdaDIF` | Selection of prediction method (see Overview)   	
-`--graph_file` | (adjacency list)`.txt` | `graphs/pubmed_adj.txt` | See Input Files Format
-`--label_file` | (label list or one-hot)`.txt` | `graphs/pubmed_label.txt` | See Input Files Format
+`--graph_file` | (adjacency list)`.txt` | `graphs/BlogCatalog/adj.txt` | See Input Files Format
+`--label_file` | (label list or one-hot)`.txt` | `graphs/BlogCatalog/class.txt` | See Input Files Format
 `--outfile` | (predicted labels)`.txt` | `out/label_predictions.txt` | File where predictions are stored when in `--mode = __predict__` (see Output Files Format)
-`--num_seeds` | `[1, 2^16]` | `100` | Number of nodes that are labeled ( only works when `--mode = __test__` )
-`--walk_length` | `[1, 2^16]` | `20` | Length of AdaDIF (and/or PPR) random walk.
+`--num_seeds` | `[1, 2^16]` | `1030` | Number of nodes that are labeled ( only works when `--mode = __test__` )
+`--walk_length` | `[1, 2^16]` | `10` | Length of AdaDIF (and/or PPR) random walk.
 `--lambda_trwr` | `>=0.0` | `1.0` | Regularization parameter for Tuned RwR method 
-`--lambda_addf` | `>=0.0` | `15.0` | Smoothness over the graph regularization parameter for AdaDIF method  
+`--lambda_addf` | `>=0.0` | `5.0` | Smoothness over the graph regularization parameter for AdaDIF method  
 `--num_iters` | `[1, 2^16]` | `1` | Number of experiments performed ( only works when `--mode = __test__` )
 
 Default values can be changed by editing `defs.h`
@@ -64,7 +64,7 @@ ARGUMENT | RESULT
 -------- | ------
 `--unconstrained` | switches AdaDIF to unconstrained mode
 `--single_thread` | forces single thread execution
-`--multilabel` | specifies multilabel input / output
+`--multiclass` | specifies multiclass input / output (default is multilabel)
 
 
 

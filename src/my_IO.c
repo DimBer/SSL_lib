@@ -68,7 +68,7 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 		{"lambda_addf",   required_argument, 0,  'h' }, 
 		{"walk_length",   required_argument, 0,  'i' }, 		
 		{"unconstrained",   no_argument, 0,  'j' },
-		{"multilabel",   no_argument, 0,  'k' },
+		{"multiclass",   no_argument, 0,  'k' },
 		{"single_thread",   no_argument, 0,  'l' }, 		
 		{"mode", required_argument, 0 , 'm' }, 
 		{"outfile", required_argument, 0 , 'n' }, 		
@@ -143,7 +143,7 @@ void parse_commandline_args(int argc,char** argv , cmd_args* args){
 				   break;				   	   
 			case 'j' : args->no_constr = true;
 				   break;		
-			case 'k' : args->is_multilabel = true;
+			case 'k' : args->is_multilabel = false;
 				   break;	
    			case 'l' : args->single_thread = true;
 				   break;			
